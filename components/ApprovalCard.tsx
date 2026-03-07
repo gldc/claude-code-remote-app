@@ -22,7 +22,7 @@ export function ApprovalCard({ sessionId, toolName, toolInput, description }: Pr
 
   const handleDeny = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    deny.mutate();
+    deny.mutate(undefined);
   };
 
   return (

@@ -12,7 +12,7 @@ export function useSessionStream(sessionId: string | null) {
 
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimer = useRef<ReturnType<typeof setTimeout>>();
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const connect = useCallback(() => {
     if (!sessionId || !hostConfig.address) return;
