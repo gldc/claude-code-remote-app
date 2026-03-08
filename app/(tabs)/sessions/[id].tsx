@@ -6,14 +6,14 @@ import { useLocalSearchParams, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Share } from 'react-native';
 import type { SlashCommand } from '../../../constants/commands';
-import { useSession, usePauseSession, useSendPrompt, useExportSession, useAddCollaborator, useRemoveCollaborator } from '../../../lib/api';
+import { useSession, usePauseSession, useSendPrompt, useExportSession } from '../../../lib/api';
 import { useSessionStream } from '../../../lib/websocket';
 import { useAppStore } from '../../../lib/store';
 import { MessageCard } from '../../../components/MessageCard';
 import { InputBar } from '../../../components/InputBar';
 import { StatusBadge } from '../../../components/StatusBadge';
 import { GitPanel } from '../../../components/GitPanel';
-import { AvatarRow } from '../../../components/AvatarRow';
+import { SessionInfoBar } from '../../../components/SessionInfoBar';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing } from '../../../constants/theme';
 import type { WSMessageData } from '../../../lib/types';
 
@@ -24,8 +24,6 @@ export default function SessionDetailScreen() {
   const sendPrompt = useSendPrompt(id);
   const pauseSession = usePauseSession(id);
   const exportSession = useExportSession(id);
-  const addCollaborator = useAddCollaborator(id);
-  const removeCollaborator = useRemoveCollaborator(id);
   const appendMessage = useAppStore((s) => s.appendMessage);
   const clearMessages = useAppStore((s) => s.clearMessages);
   const flatListRef = useRef<FlatList>(null);
@@ -113,35 +111,14 @@ export default function SessionDetailScreen() {
         }}
       />
 
-      <View style={styles.infoBar}>
-        <Text style={styles.infoText} numberOfLines={1}>
-          {session.project_dir.split('/').pop()}
-          {session.git_branch ? ` (${session.git_branch})` : ''}
-          {' | '}${session.total_cost_usd.toFixed(2)}
-          {session.current_model ? ` | ${session.current_model}` : ''}
-          {session.context_percent > 0 ? ` | ${session.context_percent}% ctx` : ''}
-        </Text>
-        <View style={styles.infoBarRight}>
-          {session.collaborators && session.collaborators.length > 0 && (
-            <AvatarRow
-              identities={session.collaborators}
-              maxVisible={3}
-              onAdd={() => {
-                Alert.prompt('Add Collaborator', 'Enter Tailscale identity', (identity) => {
-                  if (identity?.trim()) addCollaborator.mutate(identity.trim());
-                });
-              }}
-              onRemove={(identity) => {
-                Alert.alert('Remove Collaborator', `Remove ${identity}?`, [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Remove', style: 'destructive', onPress: () => removeCollaborator.mutate(identity) },
-                ]);
-              }}
-            />
-          )}
-          <View style={[styles.connDot, { backgroundColor: isConnected ? colors.success : colors.error }]} />
-        </View>
-      </View>
+      <SessionInfoBar
+        projectDir={session.project_dir}
+        gitBranch={session.git_branch}
+        costUsd={session.total_cost_usd}
+        model={session.current_model}
+        contextPercent={session.context_percent}
+        isConnected={isConnected}
+      />
 
       <FlatList
         ref={flatListRef}
@@ -199,18 +176,6 @@ const makeStyles = (c: ColorPalette) =>
     loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     headerTitleRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
     headerTitleText: { fontSize: FontSize.lg, fontWeight: '600', color: c.text, flexShrink: 1 },
-    infoBar: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.xs,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: c.cardBorder,
-    },
-    infoText: { fontSize: FontSize.xs, color: c.textMuted, flexShrink: 1 },
-    infoBarRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-    connDot: { width: 8, height: 8, borderRadius: 4 },
     listContent: {
       paddingVertical: Spacing.md,
       paddingBottom: Spacing.xl,
