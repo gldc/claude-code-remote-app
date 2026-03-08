@@ -121,29 +121,27 @@ export default function SessionDetailScreen() {
           {session.current_model ? ` | ${session.current_model}` : ''}
           {session.context_percent > 0 ? ` | ${session.context_percent}% ctx` : ''}
         </Text>
-        <View style={[styles.connDot, { backgroundColor: isConnected ? colors.success : colors.error }]} />
-      </View>
-
-      {session.collaborators && session.collaborators.length > 0 && (
-        <View style={styles.collabBar}>
-          <AvatarRow
-            identities={session.collaborators}
-            onAdd={() => {
-              Alert.prompt('Add Collaborator', 'Enter Tailscale identity', (identity) => {
-                if (identity?.trim()) addCollaborator.mutate(identity.trim());
-              });
-            }}
-            onRemove={(identity) => {
-              Alert.alert('Remove Collaborator', `Remove ${identity}?`, [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Remove', style: 'destructive', onPress: () => removeCollaborator.mutate(identity) },
-              ]);
-            }}
-          />
+        <View style={styles.infoBarRight}>
+          {session.collaborators && session.collaborators.length > 0 && (
+            <AvatarRow
+              identities={session.collaborators}
+              maxVisible={3}
+              onAdd={() => {
+                Alert.prompt('Add Collaborator', 'Enter Tailscale identity', (identity) => {
+                  if (identity?.trim()) addCollaborator.mutate(identity.trim());
+                });
+              }}
+              onRemove={(identity) => {
+                Alert.alert('Remove Collaborator', `Remove ${identity}?`, [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Remove', style: 'destructive', onPress: () => removeCollaborator.mutate(identity) },
+                ]);
+              }}
+            />
+          )}
+          <View style={[styles.connDot, { backgroundColor: isConnected ? colors.success : colors.error }]} />
         </View>
-      )}
-
-      <GitPanel sessionId={id} />
+      </View>
 
       <FlatList
         ref={flatListRef}
@@ -151,6 +149,7 @@ export default function SessionDetailScreen() {
         keyExtractor={(_, i) => String(i)}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
+        ListHeaderComponent={<GitPanel sessionId={id} />}
         ListEmptyComponent={
           !isThinking ? (
             <View style={styles.empty}>
@@ -209,14 +208,9 @@ const makeStyles = (c: ColorPalette) =>
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: c.cardBorder,
     },
-    infoText: { fontSize: FontSize.xs, color: c.textMuted },
+    infoText: { fontSize: FontSize.xs, color: c.textMuted, flexShrink: 1 },
+    infoBarRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
     connDot: { width: 8, height: 8, borderRadius: 4 },
-    collabBar: {
-      paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.xs,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: c.cardBorder,
-    },
     listContent: {
       paddingVertical: Spacing.md,
       paddingBottom: Spacing.xl,
