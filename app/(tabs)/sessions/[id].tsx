@@ -4,13 +4,16 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Share } from 'react-native';
 import type { SlashCommand } from '../../../constants/commands';
-import { useSession, usePauseSession, useSendPrompt } from '../../../lib/api';
+import { useSession, usePauseSession, useSendPrompt, useExportSession, useAddCollaborator, useRemoveCollaborator } from '../../../lib/api';
 import { useSessionStream } from '../../../lib/websocket';
 import { useAppStore } from '../../../lib/store';
 import { MessageCard } from '../../../components/MessageCard';
 import { InputBar } from '../../../components/InputBar';
 import { StatusBadge } from '../../../components/StatusBadge';
+import { GitPanel } from '../../../components/GitPanel';
+import { AvatarRow } from '../../../components/AvatarRow';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing } from '../../../constants/theme';
 import type { WSMessageData } from '../../../lib/types';
 
@@ -20,6 +23,9 @@ export default function SessionDetailScreen() {
   const { messages, isConnected } = useSessionStream(id);
   const sendPrompt = useSendPrompt(id);
   const pauseSession = usePauseSession(id);
+  const exportSession = useExportSession(id);
+  const addCollaborator = useAddCollaborator(id);
+  const removeCollaborator = useRemoveCollaborator(id);
   const appendMessage = useAppStore((s) => s.appendMessage);
   const clearMessages = useAppStore((s) => s.clearMessages);
   const flatListRef = useRef<FlatList>(null);
@@ -86,13 +92,24 @@ export default function SessionDetailScreen() {
               <StatusBadge status={session.status} />
             </View>
           ),
-          headerRight: isActive
-            ? () => (
+          headerRight: () => (
+            <View style={{ flexDirection: 'row', gap: Spacing.md }}>
+              <TouchableOpacity
+                onPress={() =>
+                  exportSession.mutate(undefined, {
+                    onSuccess: (data) => Share.share({ message: JSON.stringify(data, null, 2) }),
+                  })
+                }
+              >
+                <Ionicons name="share-outline" size={22} color={colors.text} />
+              </TouchableOpacity>
+              {isActive && (
                 <TouchableOpacity onPress={() => pauseSession.mutate()}>
                   <Ionicons name="pause-circle" size={24} color={colors.warning} />
                 </TouchableOpacity>
-              )
-            : undefined,
+              )}
+            </View>
+          ),
         }}
       />
 
@@ -106,6 +123,27 @@ export default function SessionDetailScreen() {
         </Text>
         <View style={[styles.connDot, { backgroundColor: isConnected ? colors.success : colors.error }]} />
       </View>
+
+      {session.collaborators && session.collaborators.length > 0 && (
+        <View style={styles.collabBar}>
+          <AvatarRow
+            identities={session.collaborators}
+            onAdd={() => {
+              Alert.prompt('Add Collaborator', 'Enter Tailscale identity', (identity) => {
+                if (identity?.trim()) addCollaborator.mutate(identity.trim());
+              });
+            }}
+            onRemove={(identity) => {
+              Alert.alert('Remove Collaborator', `Remove ${identity}?`, [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Remove', style: 'destructive', onPress: () => removeCollaborator.mutate(identity) },
+              ]);
+            }}
+          />
+        </View>
+      )}
+
+      <GitPanel sessionId={id} />
 
       <FlatList
         ref={flatListRef}
@@ -173,6 +211,12 @@ const makeStyles = (c: ColorPalette) =>
     },
     infoText: { fontSize: FontSize.xs, color: c.textMuted },
     connDot: { width: 8, height: 8, borderRadius: 4 },
+    collabBar: {
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.xs,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: c.cardBorder,
+    },
     listContent: {
       paddingVertical: Spacing.md,
       paddingBottom: Spacing.xl,

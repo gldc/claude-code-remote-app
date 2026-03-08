@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useApproveToolUse, useDenyToolUse } from '../lib/api';
+import { useApproveToolUse, useDenyToolUse, useCreateApprovalRule } from '../lib/api';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius, FontFamily } from '../constants/theme';
 
 interface Props {
@@ -10,17 +10,25 @@ interface Props {
   toolName: string;
   toolInput: Record<string, any>;
   description: string;
+  approvalCount?: { current: number; required: number };
 }
 
-export function ApprovalCard({ sessionId, toolName, toolInput, description }: Props) {
+export function ApprovalCard({ sessionId, toolName, toolInput, description, approvalCount }: Props) {
   const approve = useApproveToolUse(sessionId);
   const deny = useDenyToolUse(sessionId);
+  const createRule = useCreateApprovalRule();
   const [decision, setDecision] = useState<'approved' | 'denied' | null>(null);
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
 
   const handleApprove = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    approve.mutate(undefined, { onSuccess: () => setDecision('approved') });
+  };
+
+  const handleAlwaysApprove = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    createRule.mutate({ tool_pattern: toolName, action: 'approve' });
     approve.mutate(undefined, { onSuccess: () => setDecision('approved') });
   };
 
@@ -59,6 +67,14 @@ export function ApprovalCard({ sessionId, toolName, toolInput, description }: Pr
           {JSON.stringify(toolInput, null, 2)}
         </Text>
       </View>
+      {approvalCount && approvalCount.required > 1 && (
+        <View style={styles.approvalProgress}>
+          <Ionicons name="people" size={14} color={colors.textMuted} />
+          <Text style={styles.approvalProgressText}>
+            {approvalCount.current}/{approvalCount.required} approved
+          </Text>
+        </View>
+      )}
       <View style={styles.buttons}>
         <TouchableOpacity
           style={[styles.button, styles.denyButton]}
@@ -77,6 +93,14 @@ export function ApprovalCard({ sessionId, toolName, toolInput, description }: Pr
           <Text style={[styles.buttonText, { color: '#FFFFFF' }]}>Approve</Text>
         </TouchableOpacity>
       </View>
+      <TouchableOpacity
+        style={styles.alwaysApproveButton}
+        onPress={handleAlwaysApprove}
+        disabled={createRule.isPending}
+      >
+        <Ionicons name="shield-checkmark-outline" size={14} color={colors.primary} />
+        <Text style={styles.alwaysApproveText}>Always approve {toolName}</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -168,5 +192,29 @@ const makeStyles = (c: ColorPalette) =>
     resolvedTool: {
       fontSize: FontSize.sm,
       color: c.textMuted,
+    },
+    alwaysApproveButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.xs,
+      marginTop: Spacing.sm,
+      paddingVertical: Spacing.xs,
+    },
+    alwaysApproveText: {
+      fontSize: FontSize.xs,
+      color: c.primary,
+      fontWeight: '500',
+    },
+    approvalProgress: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.xs,
+      marginBottom: Spacing.sm,
+    },
+    approvalProgressText: {
+      fontSize: FontSize.xs,
+      color: c.textMuted,
+      fontWeight: '500',
     },
   });

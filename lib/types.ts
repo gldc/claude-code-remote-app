@@ -43,6 +43,7 @@ export interface Session extends SessionSummary {
   max_budget_usd: number | null;
   messages: WSMessageData[];
   error_message: string | null;
+  collaborators: string[];
 }
 
 export interface SessionCreate {
