@@ -1,79 +1,105 @@
-import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius, FontFamily } from '../constants/theme';
+import React from 'react';
+import { Text, StyleSheet } from 'react-native';
+import { ExpandableCard } from './ExpandableCard';
+import { DiffViewer } from './DiffViewer';
+import { SyntaxHighlightedText } from './SyntaxHighlightedText';
+import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, FontFamily } from '../constants/theme';
 
 interface Props {
   output: string;
   isError?: boolean;
 }
 
+type ContentType = 'diff' | 'code' | 'error' | 'plain';
+
+function detectContentType(output: string, isError?: boolean): ContentType {
+  if (isError) return 'error';
+  const trimmed = output.trimStart();
+  if (
+    trimmed.startsWith('diff ') ||
+    trimmed.startsWith('--- ') ||
+    trimmed.startsWith('+++ ') ||
+    trimmed.startsWith('@@ ')
+  ) {
+    return 'diff';
+  }
+  if (
+    trimmed.startsWith('{') ||
+    trimmed.startsWith('[') ||
+    trimmed.startsWith('function ') ||
+    trimmed.startsWith('const ') ||
+    trimmed.startsWith('import ') ||
+    trimmed.startsWith('export ') ||
+    trimmed.startsWith('class ') ||
+    trimmed.startsWith('def ') ||
+    trimmed.startsWith('#!') ||
+    /^\s*(public|private|protected)\s/.test(trimmed)
+  ) {
+    return 'code';
+  }
+  return 'plain';
+}
+
 export function ToolResultCard({ output, isError }: Props) {
-  const [expanded, setExpanded] = useState(false);
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
-  const icon = isError ? 'close-circle' : 'checkmark-circle';
-  const color = isError ? colors.error : colors.success;
+  const contentType = detectContentType(output, isError);
+  const lines = output.split('\n');
+  const icon = isError ? 'xmark.circle' : 'checkmark.circle';
+  const badgeText = isError ? 'error' : `${lines.length} lines`;
+
+  const renderContent = () => {
+    switch (contentType) {
+      case 'diff':
+        return <DiffViewer diff={output} />;
+      case 'code':
+        return <SyntaxHighlightedText code={output} />;
+      case 'error':
+        return <Text style={styles.errorText} selectable>{output}</Text>;
+      case 'plain':
+      default:
+        return <Text style={styles.plainText} selectable>{output}</Text>;
+    }
+  };
 
   return (
-    <View style={styles.card}>
-      <TouchableOpacity
-        style={styles.header}
-        onPress={() => setExpanded(!expanded)}
-        activeOpacity={0.6}
-      >
-        <Ionicons name={icon} size={14} color={color} />
-        <Text style={styles.preview} numberOfLines={1}>
-          {output.slice(0, 100)}
+    <ExpandableCard
+      title="Tool Result"
+      icon={icon}
+      badge={badgeText}
+      preview={
+        <Text style={[styles.preview, isError && styles.errorPreview]} numberOfLines={2}>
+          {output.slice(0, 200)}
         </Text>
-        <Ionicons
-          name={expanded ? 'chevron-up' : 'chevron-down'}
-          size={14}
-          color={colors.textMuted}
-        />
-      </TouchableOpacity>
-      {expanded && (
-        <View style={styles.body}>
-          <Text style={styles.code} selectable>{output}</Text>
-        </View>
-      )}
-    </View>
+      }
+    >
+      {renderContent()}
+    </ExpandableCard>
   );
 }
 
 const makeStyles = (c: ColorPalette) =>
   StyleSheet.create({
-    card: {
-      marginHorizontal: Spacing.lg,
-      marginVertical: 3,
-      borderRadius: BorderRadius.md,
-      backgroundColor: c.toolBg,
-      overflow: 'hidden',
-    },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: Spacing.sm,
-      paddingHorizontal: Spacing.md,
-      gap: 6,
-    },
     preview: {
-      flex: 1,
-      fontSize: FontSize.xs,
-      color: c.textMuted,
       fontFamily: FontFamily.mono,
-    },
-    body: {
+      fontSize: FontSize.xs - 1,
+      color: c.textMuted,
       paddingHorizontal: Spacing.md,
       paddingBottom: Spacing.sm,
     },
-    code: {
+    errorPreview: {
+      color: c.error,
+    },
+    errorText: {
+      fontFamily: FontFamily.mono,
+      fontSize: FontSize.xs - 1,
+      color: c.error,
+      padding: Spacing.sm,
+    },
+    plainText: {
       fontFamily: FontFamily.mono,
       fontSize: FontSize.xs - 1,
       color: c.textSecondary,
-      backgroundColor: c.toolIconBg,
-      borderRadius: 6,
       padding: Spacing.sm,
-      overflow: 'hidden',
     },
   });

@@ -12,6 +12,7 @@ const VALID_WS_MESSAGE_TYPES: Set<string> = new Set<string>([
   'error',
   'rate_limit',
   'cost_update',
+  'bash_output',
   'ping',
 ]);
 

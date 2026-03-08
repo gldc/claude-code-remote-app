@@ -19,6 +19,7 @@ export type WSMessageType =
   | 'error'
   | 'rate_limit'
   | 'cost_update'
+  | 'bash_output'
   | 'ping';
 
 export interface SessionSummary {
@@ -53,6 +54,7 @@ export interface SessionCreate {
   max_budget_usd?: number;
   skip_permissions?: boolean;
   use_sandbox?: boolean;
+  allowed_tools?: string[];
 }
 
 export interface Template {
@@ -63,6 +65,8 @@ export interface Template {
   model: string | null;
   max_budget_usd: number | null;
   allowed_tools: string[] | null;
+  tags: string[];
+  is_builtin: boolean;
   created_at: string;
 }
 

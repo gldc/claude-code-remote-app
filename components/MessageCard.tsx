@@ -3,6 +3,7 @@ import type { WSMessageData } from '../lib/types';
 import { AssistantTextCard } from './AssistantTextCard';
 import { ToolUseCard } from './ToolUseCard';
 import { ToolResultCard } from './ToolResultCard';
+import { BashOutputCard } from './BashOutputCard';
 import { ApprovalCard } from './ApprovalCard';
 import { ErrorCard } from './ErrorCard';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
@@ -55,6 +56,8 @@ export function MessageCard({ message, sessionId, isFirstInGroup }: Props) {
           isError={message.data.is_error}
         />
       );
+    case 'bash_output':
+      return <BashOutputCard output={message.data.output} />;
     case 'approval_request':
       return (
         <ApprovalCard
