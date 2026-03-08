@@ -48,14 +48,29 @@ async function apiFetch<T>(baseUrl: string, path: string, init?: RequestInit): P
 
 // --- Sessions ---
 
-export function useSessionsList(status?: SessionStatus) {
+export function useSessionsList(status?: SessionStatus, archived?: boolean) {
   const baseUrl = useBaseUrl();
-  const params = status ? `?status=${status}` : '';
+  const params = new URLSearchParams();
+  if (status) params.set('status', status);
+  if (archived !== undefined) params.set('archived', String(archived));
+  const qs = params.toString() ? `?${params.toString()}` : '';
   return useQuery<SessionSummary[]>({
-    queryKey: ['sessions', status],
-    queryFn: () => apiFetch(baseUrl, `/api/sessions${params}`),
+    queryKey: ['sessions', status, archived],
+    queryFn: () => apiFetch(baseUrl, `/api/sessions${qs}`),
     enabled: !!baseUrl,
     refetchInterval: 5000,
+  });
+}
+
+export function useArchiveSession() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, archived }: { id: string; archived: boolean }) =>
+      apiFetch(baseUrl, `/api/sessions/${id}/${archived ? 'archive' : 'unarchive'}`, {
+        method: 'POST',
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['sessions'] }),
   });
 }
 
@@ -65,6 +80,7 @@ export function useSession(id: string) {
     queryKey: ['session', id],
     queryFn: () => apiFetch(baseUrl, `/api/sessions/${id}`),
     enabled: !!baseUrl && !!id,
+    refetchInterval: 5000,
   });
 }
 
@@ -93,12 +109,17 @@ export function useDeleteSession() {
 
 export function useSendPrompt(sessionId: string) {
   const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (prompt: string) =>
       apiFetch(baseUrl, `/api/sessions/${sessionId}/send`, {
         method: 'POST',
         body: JSON.stringify({ prompt }),
       }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['session', sessionId] });
+      qc.invalidateQueries({ queryKey: ['sessions'] });
+    },
   });
 }
 

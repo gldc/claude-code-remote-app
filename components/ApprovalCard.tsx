@@ -1,8 +1,9 @@
+import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useApproveToolUse, useDenyToolUse } from '../lib/api';
-import { Colors, FontSize, Spacing, BorderRadius, FontFamily } from '../constants/theme';
+import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius, FontFamily } from '../constants/theme';
 
 interface Props {
   sessionId: string;
@@ -14,21 +15,39 @@ interface Props {
 export function ApprovalCard({ sessionId, toolName, toolInput, description }: Props) {
   const approve = useApproveToolUse(sessionId);
   const deny = useDenyToolUse(sessionId);
+  const [decision, setDecision] = useState<'approved' | 'denied' | null>(null);
+  const colors = useColors();
+  const styles = useThemedStyles(colors, makeStyles);
 
   const handleApprove = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    approve.mutate();
+    approve.mutate(undefined, { onSuccess: () => setDecision('approved') });
   };
 
   const handleDeny = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    deny.mutate(undefined);
+    deny.mutate(undefined, { onSuccess: () => setDecision('denied') });
   };
+
+  if (decision) {
+    const isApproved = decision === 'approved';
+    const color = isApproved ? colors.success : colors.error;
+    const icon = isApproved ? 'checkmark-circle' : 'close-circle';
+    const label = isApproved ? 'Approved' : 'Denied';
+
+    return (
+      <View style={[styles.resolved, { borderColor: color + '40' }]}>
+        <Ionicons name={icon as any} size={16} color={color} />
+        <Text style={[styles.resolvedLabel, { color }]}>{label}</Text>
+        <Text style={styles.resolvedTool}>{toolName}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Ionicons name="shield-checkmark" size={20} color={Colors.warning} />
+        <Ionicons name="shield-checkmark" size={20} color={colors.warning} />
         <Text style={styles.title}>Approval Required</Text>
       </View>
       <Text style={styles.toolName}>{toolName}</Text>
@@ -46,87 +65,108 @@ export function ApprovalCard({ sessionId, toolName, toolInput, description }: Pr
           onPress={handleDeny}
           disabled={deny.isPending}
         >
-          <Ionicons name="close" size={18} color={Colors.error} />
-          <Text style={[styles.buttonText, { color: Colors.error }]}>Deny</Text>
+          <Ionicons name="close" size={18} color={colors.error} />
+          <Text style={[styles.buttonText, { color: colors.error }]}>Deny</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.button, styles.approveButton]}
           onPress={handleApprove}
           disabled={approve.isPending}
         >
-          <Ionicons name="checkmark" size={18} color={Colors.background} />
-          <Text style={[styles.buttonText, { color: Colors.background }]}>Approve</Text>
+          <Ionicons name="checkmark" size={18} color="#FFFFFF" />
+          <Text style={[styles.buttonText, { color: '#FFFFFF' }]}>Approve</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    marginHorizontal: Spacing.lg,
-    marginVertical: Spacing.sm,
-    backgroundColor: Colors.card,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 2,
-    borderColor: Colors.warning,
-    padding: Spacing.lg,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginBottom: Spacing.sm,
-  },
-  title: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: Colors.warning,
-  },
-  toolName: {
-    fontSize: FontSize.md,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: Spacing.xs,
-  },
-  description: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.sm,
-  },
-  inputPreview: {
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.sm,
-    padding: Spacing.md,
-    marginBottom: Spacing.lg,
-  },
-  code: {
-    fontFamily: FontFamily.mono,
-    fontSize: FontSize.xs,
-    color: Colors.textSecondary,
-  },
-  buttons: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  button: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
-    gap: Spacing.xs,
-  },
-  denyButton: {
-    borderWidth: 1,
-    borderColor: Colors.error,
-  },
-  approveButton: {
-    backgroundColor: Colors.success,
-  },
-  buttonText: {
-    fontSize: FontSize.md,
-    fontWeight: '700',
-  },
-});
+const makeStyles = (c: ColorPalette) =>
+  StyleSheet.create({
+    card: {
+      marginHorizontal: Spacing.lg,
+      marginVertical: Spacing.sm,
+      backgroundColor: c.card,
+      borderRadius: BorderRadius.lg,
+      borderWidth: 2,
+      borderColor: c.warning,
+      padding: Spacing.lg,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+      marginBottom: Spacing.sm,
+    },
+    title: {
+      fontSize: FontSize.lg,
+      fontWeight: '700',
+      color: c.warning,
+    },
+    toolName: {
+      fontSize: FontSize.md,
+      fontWeight: '600',
+      color: c.text,
+      marginBottom: Spacing.xs,
+    },
+    description: {
+      fontSize: FontSize.sm,
+      color: c.textSecondary,
+      marginBottom: Spacing.sm,
+    },
+    inputPreview: {
+      backgroundColor: c.background,
+      borderRadius: BorderRadius.sm,
+      padding: Spacing.md,
+      marginBottom: Spacing.lg,
+    },
+    code: {
+      fontFamily: FontFamily.mono,
+      fontSize: FontSize.xs,
+      color: c.textSecondary,
+    },
+    buttons: {
+      flexDirection: 'row',
+      gap: Spacing.md,
+    },
+    button: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: Spacing.md,
+      borderRadius: BorderRadius.md,
+      gap: Spacing.xs,
+    },
+    denyButton: {
+      borderWidth: 1,
+      borderColor: c.error,
+    },
+    approveButton: {
+      backgroundColor: c.success,
+    },
+    buttonText: {
+      fontSize: FontSize.md,
+      fontWeight: '700',
+    },
+    resolved: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.xs,
+      marginHorizontal: Spacing.lg,
+      marginVertical: 3,
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.sm,
+      backgroundColor: c.card,
+      borderRadius: BorderRadius.md,
+      borderWidth: 1,
+    },
+    resolvedLabel: {
+      fontSize: FontSize.sm,
+      fontWeight: '600',
+    },
+    resolvedTool: {
+      fontSize: FontSize.sm,
+      color: c.textMuted,
+    },
+  });

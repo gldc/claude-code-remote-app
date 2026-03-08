@@ -1,42 +1,168 @@
-import { View, StyleSheet } from 'react-native';
-import Markdown from 'react-native-markdown-display';
-import { Colors, Spacing, BorderRadius, FontSize, FontFamily } from '../constants/theme';
+import React, { type ReactNode, useMemo } from 'react';
+import { View, ScrollView, StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
+import Markdown, { Renderer } from 'react-native-marked';
+import { useColors, type ColorPalette, Spacing, FontSize } from '../constants/theme';
+
+function createRenderer(colors: ColorPalette) {
+  return class ChatRenderer extends Renderer {
+    code(
+      text: string,
+      language?: string,
+      containerStyle?: ViewStyle,
+      _textStyle?: TextStyle,
+    ): ReactNode {
+      return super.code(text, language, containerStyle, {
+        fontFamily: 'Menlo',
+        fontSize: FontSize.sm - 1,
+        color: colors.codeText,
+      });
+    }
+
+    table(
+      header: ReactNode[][],
+      rows: ReactNode[][][],
+      tableStyle?: ViewStyle,
+      rowStyle?: ViewStyle,
+      cellStyle?: ViewStyle,
+    ): ReactNode {
+      const node = super.table(header, rows, tableStyle, rowStyle, cellStyle);
+      return (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator
+          key={this.getKey()}
+          style={mdStyles.tableScroll}
+        >
+          {node}
+        </ScrollView>
+      );
+    }
+  };
+}
 
 export function AssistantTextCard({ text }: { text: string }) {
+  const colors = useColors();
+  const renderer = useMemo(() => {
+    const Cls = createRenderer(colors);
+    return new Cls();
+  }, [colors]);
+
   return (
-    <View style={styles.card}>
+    <View style={styles.container}>
       <Markdown
-        style={{
-          body: { color: Colors.text, fontSize: FontSize.md },
-          code_inline: {
-            backgroundColor: Colors.background,
-            color: Colors.primary,
-            fontFamily: FontFamily.mono,
-            fontSize: FontSize.sm,
+        value={text}
+        flatListProps={{ scrollEnabled: false, style: { backgroundColor: 'transparent' } }}
+        renderer={renderer}
+        theme={{
+          colors: {
+            text: colors.text,
+            link: colors.primary,
+            code: colors.codespanText,
+            border: colors.cardBorder,
           },
-          fence: {
-            backgroundColor: Colors.background,
-            color: Colors.text,
-            fontFamily: FontFamily.mono,
-            fontSize: FontSize.sm,
-            padding: Spacing.md,
-            borderRadius: BorderRadius.sm,
-          },
-          link: { color: Colors.primary },
-          heading1: { color: Colors.text, fontWeight: '700' },
-          heading2: { color: Colors.text, fontWeight: '700' },
-          heading3: { color: Colors.text, fontWeight: '600' },
         }}
-      >
-        {text}
-      </Markdown>
+        styles={{
+          text: {
+            fontSize: FontSize.md,
+            lineHeight: 21,
+          },
+          h1: {
+            fontSize: 19,
+            fontWeight: '700',
+            marginTop: 12,
+            marginBottom: 4,
+          },
+          h2: {
+            fontSize: 17,
+            fontWeight: '700',
+            marginTop: 10,
+            marginBottom: 4,
+          },
+          h3: {
+            fontSize: FontSize.md,
+            fontWeight: '600',
+            marginTop: 8,
+            marginBottom: 2,
+          },
+          h4: {
+            fontSize: FontSize.md,
+            fontWeight: '600',
+            marginTop: 6,
+            marginBottom: 2,
+          },
+          h5: {
+            fontSize: FontSize.md,
+            fontWeight: '600',
+            marginTop: 6,
+            marginBottom: 2,
+          },
+          h6: {
+            fontSize: FontSize.md,
+            fontWeight: '600',
+            marginTop: 6,
+            marginBottom: 2,
+          },
+          paragraph: {
+            marginVertical: 4,
+          },
+          list: {
+            marginVertical: 4,
+          },
+          li: {
+            fontSize: FontSize.md,
+          },
+          strong: {
+            fontWeight: '600',
+          },
+          link: {
+            color: colors.primary,
+            textDecorationLine: 'none',
+          },
+          blockquote: {
+            borderLeftWidth: 2,
+            borderLeftColor: colors.cardBorder,
+            paddingLeft: 10,
+            marginVertical: 4,
+          },
+          table: {
+            marginVertical: 8,
+          },
+          tableRow: {
+            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderColor: colors.cardBorder,
+          },
+          tableCell: {
+            paddingVertical: 6,
+            paddingHorizontal: 8,
+          },
+          codespan: {
+            backgroundColor: colors.codespanBg,
+            borderRadius: 4,
+            paddingHorizontal: 5,
+            paddingVertical: 1,
+            fontFamily: 'Menlo',
+            fontSize: FontSize.sm - 1,
+            color: colors.codespanText,
+          },
+          code: {
+            backgroundColor: colors.codeBg,
+            borderRadius: 8,
+            padding: Spacing.md,
+          },
+        }}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
+  container: {
+    paddingHorizontal: Spacing.md,
+  },
+});
+
+const mdStyles = StyleSheet.create({
+  tableScroll: {
+    marginVertical: 8,
   },
 });

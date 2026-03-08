@@ -1,15 +1,18 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import {
-  View, FlatList, Text, TouchableOpacity, ActivityIndicator, StyleSheet,
+  View, FlatList, Text, TouchableOpacity, ActivityIndicator, Alert, StyleSheet,
 } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import type { SlashCommand } from '../../../constants/commands';
 import { useSession, usePauseSession, useSendPrompt } from '../../../lib/api';
 import { useSessionStream } from '../../../lib/websocket';
+import { useAppStore } from '../../../lib/store';
 import { MessageCard } from '../../../components/MessageCard';
 import { InputBar } from '../../../components/InputBar';
 import { StatusBadge } from '../../../components/StatusBadge';
-import { Colors, FontSize, Spacing } from '../../../constants/theme';
+import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing } from '../../../constants/theme';
+import type { WSMessageData } from '../../../lib/types';
 
 export default function SessionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -17,7 +20,22 @@ export default function SessionDetailScreen() {
   const { messages, isConnected } = useSessionStream(id);
   const sendPrompt = useSendPrompt(id);
   const pauseSession = usePauseSession(id);
+  const appendMessage = useAppStore((s) => s.appendMessage);
+  const clearMessages = useAppStore((s) => s.clearMessages);
   const flatListRef = useRef<FlatList>(null);
+  const colors = useColors();
+  const styles = useThemedStyles(colors, makeStyles);
+
+  const handleCommand = useCallback((command: SlashCommand) => {
+    switch (command.name) {
+      case 'clear':
+        clearMessages(id);
+        break;
+      case 'cost':
+        Alert.alert('Session Cost', `$${session?.total_cost_usd.toFixed(4) ?? '0.00'}`);
+        break;
+    }
+  }, [id, clearMessages, session?.total_cost_usd]);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -25,86 +43,182 @@ export default function SessionDetailScreen() {
     }
   }, [messages.length]);
 
+  const isFirstAssistantInGroup = useCallback(
+    (index: number) => {
+      if (messages[index]?.type !== 'assistant_text') return false;
+      if (index === 0) return true;
+      const prev = messages[index - 1];
+      return prev.type === 'user_message' || prev.type === 'status_change';
+    },
+    [messages],
+  );
+
+  const renderItem = useCallback(
+    ({ item, index }: { item: WSMessageData; index: number }) => (
+      <MessageCard
+        message={item}
+        sessionId={id}
+        isFirstInGroup={isFirstAssistantInGroup(index)}
+      />
+    ),
+    [id, isFirstAssistantInGroup],
+  );
+
   if (isLoading || !session) {
     return (
       <View style={styles.loader}>
-        <ActivityIndicator color={Colors.primary} />
+        <ActivityIndicator color={colors.primary} />
       </View>
     );
   }
 
   const isActive = session.status === 'running' || session.status === 'awaiting_approval';
-  const canSend = session.status === 'running' || session.status === 'paused';
+  const canSend = session.status !== 'running' && session.status !== 'awaiting_approval';
+  const isThinking = session.status === 'running';
 
   return (
     <View style={styles.container}>
       <Stack.Screen
         options={{
-          title: session.name,
-          headerRight: () => (
-            <View style={styles.headerRight}>
+          headerTitle: () => (
+            <View style={styles.headerTitleRow}>
+              <Text style={styles.headerTitleText} numberOfLines={1}>{session.name}</Text>
               <StatusBadge status={session.status} />
-              {isActive && (
-                <TouchableOpacity onPress={() => pauseSession.mutate()}>
-                  <Ionicons name="pause-circle" size={24} color={Colors.warning} />
-                </TouchableOpacity>
-              )}
             </View>
           ),
+          headerRight: isActive
+            ? () => (
+                <TouchableOpacity onPress={() => pauseSession.mutate()}>
+                  <Ionicons name="pause-circle" size={24} color={colors.warning} />
+                </TouchableOpacity>
+              )
+            : undefined,
         }}
       />
 
       <View style={styles.infoBar}>
-        <Text style={styles.infoText}>
-          {session.project_dir.split('/').pop()} | ${session.total_cost_usd.toFixed(2)}
+        <Text style={styles.infoText} numberOfLines={1}>
+          {session.project_dir.split('/').pop()}
+          {session.git_branch ? ` (${session.git_branch})` : ''}
+          {' | '}${session.total_cost_usd.toFixed(2)}
+          {session.current_model ? ` | ${session.current_model}` : ''}
+          {session.context_percent > 0 ? ` | ${session.context_percent}% ctx` : ''}
         </Text>
-        <View style={[styles.connDot, { backgroundColor: isConnected ? Colors.success : Colors.error }]} />
+        <View style={[styles.connDot, { backgroundColor: isConnected ? colors.success : colors.error }]} />
       </View>
 
       <FlatList
         ref={flatListRef}
         data={messages}
         keyExtractor={(_, i) => String(i)}
-        renderItem={({ item }) => <MessageCard message={item} sessionId={id} />}
-        contentContainerStyle={{ paddingVertical: Spacing.sm }}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listContent}
         ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyText}>
-              {isActive ? 'Waiting for output...' : 'No messages yet'}
-            </Text>
-          </View>
+          !isThinking ? (
+            <View style={styles.empty}>
+              <Text style={styles.emptyText}>No messages yet</Text>
+            </View>
+          ) : null
+        }
+        ListFooterComponent={
+          isThinking ? (
+            <View style={styles.thinkingRow}>
+              <View style={styles.thinkingAvatarCol}>
+                <View style={styles.thinkingAvatar}>
+                  <Text style={styles.thinkingAvatarText}>C</Text>
+                </View>
+              </View>
+              <View style={styles.thinkingDots}>
+                <ActivityIndicator size="small" color={colors.textMuted} />
+                <Text style={styles.thinkingText}>Thinking...</Text>
+              </View>
+            </View>
+          ) : null
         }
       />
 
       {canSend && (
         <InputBar
-          onSend={(text) => sendPrompt.mutate(text)}
+          onSend={(text) => {
+            appendMessage(id, {
+              type: 'user_message',
+              data: { text },
+              timestamp: new Date().toISOString(),
+            });
+            sendPrompt.mutate(text);
+          }}
+          onCommand={handleCommand}
           disabled={sendPrompt.isPending}
-          placeholder="Send a follow-up prompt..."
+          placeholder="Message Claude..."
         />
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
-  loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  headerRight: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  infoBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.xs,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.cardBorder,
-  },
-  infoText: { fontSize: FontSize.xs, color: Colors.textMuted },
-  connDot: { width: 8, height: 8, borderRadius: 4 },
-  empty: {
-    padding: Spacing.xxl,
-    alignItems: 'center',
-  },
-  emptyText: { fontSize: FontSize.sm, color: Colors.textMuted },
-});
+const makeStyles = (c: ColorPalette) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.background },
+    loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    headerTitleRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
+    headerTitleText: { fontSize: FontSize.lg, fontWeight: '600', color: c.text, flexShrink: 1 },
+    infoBar: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.xs,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: c.cardBorder,
+    },
+    infoText: { fontSize: FontSize.xs, color: c.textMuted },
+    connDot: { width: 8, height: 8, borderRadius: 4 },
+    listContent: {
+      paddingVertical: Spacing.md,
+      paddingBottom: Spacing.xl,
+    },
+    empty: {
+      padding: Spacing.xxl * 2,
+      alignItems: 'center',
+    },
+    emptyText: { fontSize: FontSize.md, color: c.textMuted },
+    thinkingRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: Spacing.sm,
+    },
+    thinkingAvatarCol: {
+      width: 40,
+      alignItems: 'center',
+    },
+    thinkingAvatar: {
+      width: 26,
+      height: 26,
+      borderRadius: 13,
+      backgroundColor: c.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    thinkingAvatarText: {
+      color: '#FFFFFF',
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    thinkingDots: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+      paddingVertical: Spacing.sm,
+      paddingHorizontal: Spacing.md,
+      backgroundColor: c.card,
+      borderRadius: 16,
+      shadowColor: c.shadowColor,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.04,
+      shadowRadius: 3,
+    },
+    thinkingText: {
+      fontSize: FontSize.sm,
+      color: c.textMuted,
+    },
+  });

@@ -1,10 +1,12 @@
 import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, FontSize, Spacing, BorderRadius } from '../constants/theme';
+import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
 import type { Template } from '../lib/types';
 
 export function TemplateCard({ template }: { template: Template }) {
+  const colors = useColors();
+  const styles = useThemedStyles(colors, makeStyles);
   return (
     <TouchableOpacity
       style={styles.card}
@@ -15,24 +17,25 @@ export function TemplateCard({ template }: { template: Template }) {
         <Text style={styles.name}>{template.name}</Text>
         <Text style={styles.prompt} numberOfLines={2}>{template.initial_prompt}</Text>
       </View>
-      <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
+      <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
     </TouchableOpacity>
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.card,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.sm,
-    borderWidth: 1,
-    borderColor: Colors.cardBorder,
-  },
-  info: { flex: 1 },
-  name: { fontSize: FontSize.md, fontWeight: '600', color: Colors.text },
-  prompt: { fontSize: FontSize.sm, color: Colors.textMuted, marginTop: 2 },
-});
+const makeStyles = (c: ColorPalette) =>
+  StyleSheet.create({
+    card: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: c.card,
+      borderRadius: BorderRadius.lg,
+      padding: Spacing.lg,
+      marginHorizontal: Spacing.lg,
+      marginBottom: Spacing.sm,
+      borderWidth: 1,
+      borderColor: c.cardBorder,
+    },
+    info: { flex: 1 },
+    name: { fontSize: FontSize.md, fontWeight: '600', color: c.text },
+    prompt: { fontSize: FontSize.sm, color: c.textMuted, marginTop: 2 },
+  });

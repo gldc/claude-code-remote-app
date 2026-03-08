@@ -1,44 +1,43 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { Colors, FontSize, Spacing, BorderRadius } from '../constants/theme';
+import { useColors, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
 import type { SessionStatus } from '../lib/types';
 
-const STATUS_COLORS: Record<SessionStatus, string> = {
-  created: Colors.textMuted,
-  running: Colors.success,
-  awaiting_approval: Colors.warning,
-  paused: Colors.textMuted,
-  completed: Colors.primary,
-  error: Colors.error,
-};
+interface Props {
+  status: SessionStatus;
+  minimal?: boolean;
+}
 
-const STATUS_LABELS: Record<SessionStatus, string> = {
-  created: 'Created',
-  running: 'Running',
-  awaiting_approval: 'Awaiting',
-  paused: 'Paused',
-  completed: 'Completed',
-  error: 'Error',
-};
-
-export function StatusBadge({ status }: { status: SessionStatus }) {
-  const color = STATUS_COLORS[status] || Colors.textMuted;
+export function StatusBadge({ status, minimal }: Props) {
+  const colors = useColors();
+  const config = getStatusConfig(colors)[status] || { color: colors.textMuted, label: status };
   return (
-    <View style={[styles.badge, { borderColor: color }]}>
-      <View style={[styles.dot, { backgroundColor: color }]} />
-      <Text style={[styles.label, { color }]}>{STATUS_LABELS[status]}</Text>
+    <View style={[styles.badge, !minimal && { backgroundColor: config.color + '14' }]}>
+      <View style={[styles.dot, { backgroundColor: config.color }]} />
+      <Text style={[styles.label, { color: config.color }]}>{config.label}</Text>
     </View>
   );
+}
+
+function getStatusConfig(c: ColorPalette): Record<SessionStatus, { color: string; label: string }> {
+  return {
+    created: { color: c.textMuted, label: 'Created' },
+    running: { color: c.success, label: 'Running' },
+    idle: { color: c.primary, label: 'Idle' },
+    awaiting_approval: { color: c.warning, label: 'Awaiting' },
+    paused: { color: c.textMuted, label: 'Paused' },
+    completed: { color: c.textMuted, label: 'Done' },
+    error: { color: c.error, label: 'Error' },
+  };
 }
 
 const styles = StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
+    paddingHorizontal: Spacing.sm + 2,
+    paddingVertical: 3,
     borderRadius: BorderRadius.xl,
-    borderWidth: 1,
-    gap: Spacing.xs,
+    gap: 5,
   },
   dot: {
     width: 6,
@@ -48,6 +47,5 @@ const styles = StyleSheet.create({
   label: {
     fontSize: FontSize.xs,
     fontWeight: '600',
-    textTransform: 'uppercase',
   },
 });

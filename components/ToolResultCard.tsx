@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, FontSize, Spacing, BorderRadius, FontFamily } from '../constants/theme';
+import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius, FontFamily } from '../constants/theme';
 
 interface Props {
   output: string;
@@ -10,30 +10,26 @@ interface Props {
 
 export function ToolResultCard({ output, isError }: Props) {
   const [expanded, setExpanded] = useState(false);
-  const color = isError ? Colors.error : Colors.success;
+  const colors = useColors();
+  const styles = useThemedStyles(colors, makeStyles);
+  const icon = isError ? 'close-circle' : 'checkmark-circle';
+  const color = isError ? colors.error : colors.success;
 
   return (
-    <View style={[styles.card, { borderLeftColor: color }]}>
+    <View style={styles.card}>
       <TouchableOpacity
         style={styles.header}
         onPress={() => setExpanded(!expanded)}
-        activeOpacity={0.7}
+        activeOpacity={0.6}
       >
-        <Ionicons
-          name={isError ? 'close-circle' : 'checkmark-circle'}
-          size={16}
-          color={color}
-        />
-        <Text style={[styles.label, { color }]}>
-          {isError ? 'Error' : 'Result'}
-        </Text>
+        <Ionicons name={icon} size={14} color={color} />
         <Text style={styles.preview} numberOfLines={1}>
-          {output.slice(0, 80)}
+          {output.slice(0, 100)}
         </Text>
         <Ionicons
           name={expanded ? 'chevron-up' : 'chevron-down'}
-          size={16}
-          color={Colors.textMuted}
+          size={14}
+          color={colors.textMuted}
         />
       </TouchableOpacity>
       {expanded && (
@@ -45,41 +41,39 @@ export function ToolResultCard({ output, isError }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    marginHorizontal: Spacing.lg,
-    marginVertical: Spacing.xs,
-    backgroundColor: Colors.card,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: Colors.cardBorder,
-    borderLeftWidth: 3,
-    overflow: 'hidden',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.md,
-    gap: Spacing.sm,
-  },
-  label: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-  },
-  preview: {
-    flex: 1,
-    fontSize: FontSize.xs,
-    color: Colors.textMuted,
-  },
-  body: {
-    padding: Spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: Colors.cardBorder,
-    backgroundColor: Colors.background,
-  },
-  code: {
-    fontFamily: FontFamily.mono,
-    fontSize: FontSize.xs,
-    color: Colors.textSecondary,
-  },
-});
+const makeStyles = (c: ColorPalette) =>
+  StyleSheet.create({
+    card: {
+      marginHorizontal: Spacing.lg,
+      marginVertical: 3,
+      borderRadius: BorderRadius.md,
+      backgroundColor: c.toolBg,
+      overflow: 'hidden',
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: Spacing.sm,
+      paddingHorizontal: Spacing.md,
+      gap: 6,
+    },
+    preview: {
+      flex: 1,
+      fontSize: FontSize.xs,
+      color: c.textMuted,
+      fontFamily: FontFamily.mono,
+    },
+    body: {
+      paddingHorizontal: Spacing.md,
+      paddingBottom: Spacing.sm,
+    },
+    code: {
+      fontFamily: FontFamily.mono,
+      fontSize: FontSize.xs - 1,
+      color: c.textSecondary,
+      backgroundColor: c.toolIconBg,
+      borderRadius: 6,
+      padding: Spacing.sm,
+      overflow: 'hidden',
+    },
+  });

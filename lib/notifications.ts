@@ -17,18 +17,24 @@ Notifications.setNotificationHandler({
 export async function getExpoPushToken(): Promise<string | null> {
   if (Platform.OS === 'web') return null;
 
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
+  try {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
 
-  if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+
+    if (finalStatus !== 'granted') return null;
+
+    const { data } = await Notifications.getExpoPushTokenAsync();
+    return data;
+  } catch {
+    // Push tokens unavailable in Expo Go — requires a development build
+    console.warn('Push notifications unavailable (requires development build)');
+    return null;
   }
-
-  if (finalStatus !== 'granted') return null;
-
-  const { data } = await Notifications.getExpoPushTokenAsync();
-  return data;
 }
 
 export function useNotificationSetup() {

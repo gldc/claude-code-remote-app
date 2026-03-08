@@ -1,6 +1,7 @@
 export type SessionStatus =
   | 'created'
   | 'running'
+  | 'idle'
   | 'awaiting_approval'
   | 'paused'
   | 'completed'
@@ -10,6 +11,7 @@ export type ProjectType = 'python' | 'node' | 'rust' | 'go' | 'unknown';
 
 export type WSMessageType =
   | 'assistant_text'
+  | 'user_message'
   | 'tool_use'
   | 'tool_result'
   | 'status_change'
@@ -28,7 +30,11 @@ export interface SessionSummary {
   created_at: string;
   updated_at: string;
   total_cost_usd: number;
+  current_model: string | null;
+  context_percent: number;
+  git_branch: string | null;
   last_message_preview: string | null;
+  archived: boolean;
 }
 
 export interface Session extends SessionSummary {
@@ -45,6 +51,8 @@ export interface SessionCreate {
   template_id?: string;
   model?: string;
   max_budget_usd?: number;
+  skip_permissions?: boolean;
+  use_sandbox?: boolean;
 }
 
 export interface Template {

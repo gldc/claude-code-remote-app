@@ -1,5 +1,5 @@
 import { ScrollView, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { Colors, FontSize, Spacing, BorderRadius } from '../constants/theme';
+import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
 
 interface FilterChipsProps {
   options: { label: string; value: string | null }[];
@@ -8,6 +8,8 @@ interface FilterChipsProps {
 }
 
 export function FilterChips({ options, selected, onSelect }: FilterChipsProps) {
+  const colors = useColors();
+  const styles = useThemedStyles(colors, makeStyles);
   return (
     <ScrollView
       horizontal
@@ -32,29 +34,32 @@ export function FilterChips({ options, selected, onSelect }: FilterChipsProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    gap: Spacing.sm,
-  },
-  chip: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1,
-    borderColor: Colors.cardBorder,
-    backgroundColor: Colors.card,
-  },
-  chipActive: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.primary + '20',
-  },
-  chipText: {
-    fontSize: FontSize.sm,
-    color: Colors.textMuted,
-  },
-  chipTextActive: {
-    color: Colors.primary,
-  },
-});
+const makeStyles = (c: ColorPalette) =>
+  StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.sm,
+      gap: Spacing.sm,
+      alignItems: 'center',
+    },
+    chip: {
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.xs,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1,
+      borderColor: c.cardBorder,
+      backgroundColor: c.card,
+    },
+    chipActive: {
+      borderColor: c.primary,
+      backgroundColor: c.primary + '20',
+    },
+    chipText: {
+      fontSize: FontSize.sm,
+      color: c.textMuted,
+    },
+    chipTextActive: {
+      color: c.primary,
+    },
+  });

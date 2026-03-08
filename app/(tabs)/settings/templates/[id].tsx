@@ -8,11 +8,13 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   useTemplatesList, useCreateTemplate, useUpdateTemplate, useDeleteTemplate,
 } from '../../../../lib/api';
-import { Colors, FontSize, Spacing, BorderRadius } from '../../../../constants/theme';
+import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../../../../constants/theme';
 
 export default function TemplateEditorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const isNew = id === 'new';
+  const colors = useColors();
+  const styles = useThemedStyles(colors, makeStyles);
 
   const { data: templates } = useTemplatesList();
   const template = isNew ? null : templates?.find((t) => t.id === id);
@@ -93,7 +95,7 @@ export default function TemplateEditorScreen() {
         value={name}
         onChangeText={setName}
         placeholder="Template name"
-        placeholderTextColor={Colors.textMuted}
+        placeholderTextColor={colors.textMuted}
         autoCapitalize="none"
       />
 
@@ -103,7 +105,7 @@ export default function TemplateEditorScreen() {
         value={projectDir}
         onChangeText={setProjectDir}
         placeholder="/path/to/project"
-        placeholderTextColor={Colors.textMuted}
+        placeholderTextColor={colors.textMuted}
         autoCapitalize="none"
       />
 
@@ -113,7 +115,7 @@ export default function TemplateEditorScreen() {
         value={initialPrompt}
         onChangeText={setInitialPrompt}
         placeholder="What should Claude do?"
-        placeholderTextColor={Colors.textMuted}
+        placeholderTextColor={colors.textMuted}
         multiline
         textAlignVertical="top"
       />
@@ -124,7 +126,7 @@ export default function TemplateEditorScreen() {
         value={model}
         onChangeText={setModel}
         placeholder="e.g., claude-sonnet-4-6"
-        placeholderTextColor={Colors.textMuted}
+        placeholderTextColor={colors.textMuted}
         autoCapitalize="none"
       />
 
@@ -134,7 +136,7 @@ export default function TemplateEditorScreen() {
         value={budgetCap}
         onChangeText={setBudgetCap}
         placeholder="e.g., 5.00"
-        placeholderTextColor={Colors.textMuted}
+        placeholderTextColor={colors.textMuted}
         keyboardType="decimal-pad"
       />
 
@@ -145,7 +147,7 @@ export default function TemplateEditorScreen() {
         activeOpacity={0.8}
       >
         {isPending ? (
-          <ActivityIndicator color={Colors.text} />
+          <ActivityIndicator color="#FFFFFF" />
         ) : (
           <Text style={styles.saveButtonText}>{isNew ? 'Create Template' : 'Save Changes'}</Text>
         )}
@@ -157,7 +159,7 @@ export default function TemplateEditorScreen() {
           onPress={handleDelete}
           activeOpacity={0.8}
         >
-          <Ionicons name="trash" size={18} color={Colors.error} />
+          <Ionicons name="trash" size={18} color={colors.error} />
           <Text style={styles.deleteButtonText}>Delete Template</Text>
         </TouchableOpacity>
       )}
@@ -167,45 +169,46 @@ export default function TemplateEditorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background, padding: Spacing.lg },
-  label: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-    color: Colors.textMuted,
-    marginBottom: Spacing.xs,
-    marginTop: Spacing.lg,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  input: {
-    backgroundColor: Colors.card,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    color: Colors.text,
-    fontSize: FontSize.md,
-    borderWidth: 1,
-    borderColor: Colors.inputBorder,
-  },
-  promptInput: { minHeight: 120, paddingTop: Spacing.md },
-  saveButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.lg,
-    alignItems: 'center',
-    marginTop: Spacing.xl,
-  },
-  saveButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: Colors.text },
-  deleteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    padding: Spacing.lg,
-    marginTop: Spacing.md,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: Colors.error,
-  },
-  deleteButtonText: { fontSize: FontSize.md, fontWeight: '600', color: Colors.error },
-});
+const makeStyles = (c: ColorPalette) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.background, padding: Spacing.lg },
+    label: {
+      fontSize: FontSize.sm,
+      fontWeight: '600',
+      color: c.textMuted,
+      marginBottom: Spacing.xs,
+      marginTop: Spacing.lg,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    input: {
+      backgroundColor: c.card,
+      borderRadius: BorderRadius.md,
+      padding: Spacing.md,
+      color: c.text,
+      fontSize: FontSize.md,
+      borderWidth: 1,
+      borderColor: c.inputBorder,
+    },
+    promptInput: { minHeight: 120, paddingTop: Spacing.md },
+    saveButton: {
+      backgroundColor: c.primary,
+      borderRadius: BorderRadius.md,
+      padding: Spacing.lg,
+      alignItems: 'center',
+      marginTop: Spacing.xl,
+    },
+    saveButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: '#FFFFFF' },
+    deleteButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.sm,
+      padding: Spacing.lg,
+      marginTop: Spacing.md,
+      borderRadius: BorderRadius.md,
+      borderWidth: 1,
+      borderColor: c.error,
+    },
+    deleteButtonText: { fontSize: FontSize.md, fontWeight: '600', color: c.error },
+  });

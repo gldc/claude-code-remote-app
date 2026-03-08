@@ -1,21 +1,23 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import { useAppStore } from './store';
 import type { WSMessageData } from './types';
+
+const EMPTY_MESSAGES: WSMessageData[] = [];
 
 export function useSessionStream(sessionId: string | null) {
   const hostConfig = useAppStore((s) => s.hostConfig);
   const appendMessage = useAppStore((s) => s.appendMessage);
   const setMessages = useAppStore((s) => s.setMessages);
-  const messages = useAppStore((s) =>
-    sessionId ? s.sessionMessages[sessionId] || [] : []
-  );
+  const sessionMessages = useAppStore((s) => s.sessionMessages);
+  const messages = sessionId ? sessionMessages[sessionId] ?? EMPTY_MESSAGES : EMPTY_MESSAGES;
 
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const unmountedRef = useRef(false);
 
   const connect = useCallback(() => {
-    if (!sessionId || !hostConfig.address) return;
+    if (!sessionId || !hostConfig.address || unmountedRef.current) return;
 
     const wsUrl = `ws://${hostConfig.address}:${hostConfig.port}/ws/sessions/${sessionId}`;
     const ws = new WebSocket(wsUrl);
@@ -37,7 +39,9 @@ export function useSessionStream(sessionId: string | null) {
 
     ws.onclose = () => {
       setIsConnected(false);
-      reconnectTimer.current = setTimeout(connect, 3000);
+      if (!unmountedRef.current) {
+        reconnectTimer.current = setTimeout(connect, 3000);
+      }
     };
 
     ws.onerror = () => {
@@ -46,8 +50,10 @@ export function useSessionStream(sessionId: string | null) {
   }, [sessionId, hostConfig.address, hostConfig.port, appendMessage]);
 
   useEffect(() => {
+    unmountedRef.current = false;
     connect();
     return () => {
+      unmountedRef.current = true;
       if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
       wsRef.current?.close();
     };

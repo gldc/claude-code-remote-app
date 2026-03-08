@@ -6,13 +6,15 @@ import {
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useCreateSession, useProjectsList, useTemplatesList } from '../../../lib/api';
-import { Colors, FontSize, Spacing, BorderRadius } from '../../../constants/theme';
+import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../../../constants/theme';
 
 export default function CreateSessionScreen() {
   const [name, setName] = useState('');
   const [projectDir, setProjectDir] = useState('');
   const [prompt, setPrompt] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const colors = useColors();
+  const styles = useThemedStyles(colors, makeStyles);
 
   const createSession = useCreateSession();
   const { data: projects } = useProjectsList();
@@ -59,7 +61,7 @@ export default function CreateSessionScreen() {
         value={name}
         onChangeText={setName}
         placeholder="e.g., fix-auth-bug"
-        placeholderTextColor={Colors.textMuted}
+        placeholderTextColor={colors.textMuted}
         autoCapitalize="none"
       />
 
@@ -92,7 +94,7 @@ export default function CreateSessionScreen() {
         value={projectDir}
         onChangeText={setProjectDir}
         placeholder="/path/to/project"
-        placeholderTextColor={Colors.textMuted}
+        placeholderTextColor={colors.textMuted}
         autoCapitalize="none"
       />
 
@@ -129,7 +131,7 @@ export default function CreateSessionScreen() {
         value={prompt}
         onChangeText={setPrompt}
         placeholder="What should Claude work on?"
-        placeholderTextColor={Colors.textMuted}
+        placeholderTextColor={colors.textMuted}
         multiline
         textAlignVertical="top"
       />
@@ -141,7 +143,7 @@ export default function CreateSessionScreen() {
         activeOpacity={0.8}
       >
         {createSession.isPending ? (
-          <ActivityIndicator color={Colors.text} />
+          <ActivityIndicator color="#FFFFFF" />
         ) : (
           <Text style={styles.createButtonText}>Create Session</Text>
         )}
@@ -152,49 +154,50 @@ export default function CreateSessionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background, padding: Spacing.lg },
-  label: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-    color: Colors.textMuted,
-    marginBottom: Spacing.xs,
-    marginTop: Spacing.lg,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  input: {
-    backgroundColor: Colors.card,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    color: Colors.text,
-    fontSize: FontSize.md,
-    borderWidth: 1,
-    borderColor: Colors.inputBorder,
-  },
-  promptInput: { minHeight: 120, paddingTop: Spacing.md },
-  projectPicker: { marginBottom: Spacing.sm },
-  projectChip: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1,
-    borderColor: Colors.cardBorder,
-    backgroundColor: Colors.card,
-    marginRight: Spacing.sm,
-  },
-  projectChipActive: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.primary + '20',
-  },
-  projectChipText: { fontSize: FontSize.sm, color: Colors.textMuted },
-  projectChipTextActive: { color: Colors.primary },
-  createButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.lg,
-    alignItems: 'center',
-    marginTop: Spacing.xl,
-  },
-  createButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: Colors.text },
-});
+const makeStyles = (c: ColorPalette) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.background, padding: Spacing.lg },
+    label: {
+      fontSize: FontSize.sm,
+      fontWeight: '600',
+      color: c.textMuted,
+      marginBottom: Spacing.xs,
+      marginTop: Spacing.lg,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    input: {
+      backgroundColor: c.card,
+      borderRadius: BorderRadius.md,
+      padding: Spacing.md,
+      color: c.text,
+      fontSize: FontSize.md,
+      borderWidth: 1,
+      borderColor: c.inputBorder,
+    },
+    promptInput: { minHeight: 120, paddingTop: Spacing.md },
+    projectPicker: { marginBottom: Spacing.sm },
+    projectChip: {
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.xs,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1,
+      borderColor: c.cardBorder,
+      backgroundColor: c.card,
+      marginRight: Spacing.sm,
+    },
+    projectChipActive: {
+      borderColor: c.primary,
+      backgroundColor: c.primary + '20',
+    },
+    projectChipText: { fontSize: FontSize.sm, color: c.textMuted },
+    projectChipTextActive: { color: c.primary },
+    createButton: {
+      backgroundColor: c.primary,
+      borderRadius: BorderRadius.md,
+      padding: Spacing.lg,
+      alignItems: 'center',
+      marginTop: Spacing.xl,
+    },
+    createButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: '#FFFFFF' },
+  });
