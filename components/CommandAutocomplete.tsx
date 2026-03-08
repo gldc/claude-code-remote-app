@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
 import { COMMANDS, SlashCommand } from '../constants/commands';
+import { useSkills } from '../lib/api';
 
 interface CommandAutocompleteProps {
   filter: string;
@@ -10,8 +12,18 @@ interface CommandAutocompleteProps {
 export function CommandAutocomplete({ filter, onSelect }: CommandAutocompleteProps) {
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
+  const { data: skills } = useSkills();
+
+  const allCommands = useMemo(() => {
+    const staticNames = new Set(COMMANDS.map((c) => c.name));
+    const dynamicSkills: SlashCommand[] = (skills ?? [])
+      .filter((s) => !staticNames.has(s.name))
+      .map((s) => ({ name: s.name, description: s.description, type: 'skill' as const }));
+    return [...COMMANDS, ...dynamicSkills];
+  }, [skills]);
+
   const query = filter.startsWith('/') ? filter.slice(1).toLowerCase() : '';
-  const filtered = COMMANDS.filter((cmd) => cmd.name.startsWith(query));
+  const filtered = allCommands.filter((cmd) => cmd.name.startsWith(query));
 
   if (filtered.length === 0) return null;
 
