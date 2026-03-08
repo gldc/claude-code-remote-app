@@ -1,7 +1,19 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { persist, createJSONStorage, type StateStorage } from 'zustand/middleware';
+import * as SecureStore from 'expo-secure-store';
 import type { WSMessageData } from './types';
+
+const secureStorage: StateStorage = {
+  getItem: async (name: string): Promise<string | null> => {
+    return SecureStore.getItemAsync(name);
+  },
+  setItem: async (name: string, value: string): Promise<void> => {
+    await SecureStore.setItemAsync(name, value);
+  },
+  removeItem: async (name: string): Promise<void> => {
+    await SecureStore.deleteItemAsync(name);
+  },
+};
 
 interface HostConfig {
   address: string;
@@ -59,7 +71,7 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'claude-code-remote-storage',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => secureStorage),
       partialize: (state) => ({
         hostConfig: state.hostConfig,
       }),

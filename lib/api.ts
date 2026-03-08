@@ -84,15 +84,30 @@ export function useSession(id: string) {
   });
 }
 
+const MAX_SESSION_NAME_LENGTH = 200;
+
 export function useCreateSession() {
   const baseUrl = useBaseUrl();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: SessionCreate) =>
-      apiFetch<Session>(baseUrl, '/api/sessions', {
+    mutationFn: (data: SessionCreate) => {
+      if (!data.project_dir || !data.project_dir.trim()) {
+        return Promise.reject(new Error('Project directory cannot be empty'));
+      }
+      if (data.name && data.name.length > MAX_SESSION_NAME_LENGTH) {
+        return Promise.reject(
+          new Error(`Session name exceeds maximum length of ${MAX_SESSION_NAME_LENGTH} characters`)
+        );
+      }
+      return apiFetch<Session>(baseUrl, '/api/sessions', {
         method: 'POST',
-        body: JSON.stringify(data),
-      }),
+        body: JSON.stringify({
+          ...data,
+          name: data.name?.trim(),
+          project_dir: data.project_dir.trim(),
+        }),
+      });
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['sessions'] }),
   });
 }
@@ -107,15 +122,27 @@ export function useDeleteSession() {
   });
 }
 
+const MAX_PROMPT_LENGTH = 50000;
+
 export function useSendPrompt(sessionId: string) {
   const baseUrl = useBaseUrl();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (prompt: string) =>
-      apiFetch(baseUrl, `/api/sessions/${sessionId}/send`, {
+    mutationFn: (prompt: string) => {
+      const sanitized = prompt.trim();
+      if (!sanitized) {
+        return Promise.reject(new Error('Prompt cannot be empty'));
+      }
+      if (sanitized.length > MAX_PROMPT_LENGTH) {
+        return Promise.reject(
+          new Error(`Prompt exceeds maximum length of ${MAX_PROMPT_LENGTH} characters`)
+        );
+      }
+      return apiFetch(baseUrl, `/api/sessions/${sessionId}/send`, {
         method: 'POST',
-        body: JSON.stringify({ prompt }),
-      }),
+        body: JSON.stringify({ prompt: sanitized }),
+      });
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['session', sessionId] });
       qc.invalidateQueries({ queryKey: ['sessions'] });

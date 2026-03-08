@@ -1,6 +1,27 @@
 import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import { useAppStore } from './store';
-import type { WSMessageData } from './types';
+import type { WSMessageData, WSMessageType } from './types';
+
+const VALID_WS_MESSAGE_TYPES: Set<string> = new Set<string>([
+  'assistant_text',
+  'user_message',
+  'tool_use',
+  'tool_result',
+  'status_change',
+  'approval_request',
+  'error',
+  'rate_limit',
+  'cost_update',
+  'ping',
+]);
+
+function isValidWSMessage(msg: unknown): msg is WSMessageData {
+  if (msg === null || typeof msg !== 'object') return false;
+  const obj = msg as Record<string, unknown>;
+  if (typeof obj.type !== 'string' || !VALID_WS_MESSAGE_TYPES.has(obj.type)) return false;
+  if (obj.type !== 'ping' && (obj.data === null || typeof obj.data !== 'object')) return false;
+  return true;
+}
 
 const EMPTY_MESSAGES: WSMessageData[] = [];
 
@@ -29,11 +50,15 @@ export function useSessionStream(sessionId: string | null) {
 
     ws.onmessage = (event) => {
       try {
-        const msg: WSMessageData = JSON.parse(event.data);
-        if (msg.type === 'ping') return;
-        appendMessage(sessionId, msg);
+        const parsed: unknown = JSON.parse(event.data);
+        if (!isValidWSMessage(parsed)) {
+          console.warn('[WS] Dropping invalid message:', event.data);
+          return;
+        }
+        if (parsed.type === 'ping') return;
+        appendMessage(sessionId, parsed);
       } catch {
-        // ignore parse errors
+        console.warn('[WS] Failed to parse message:', event.data);
       }
     };
 
