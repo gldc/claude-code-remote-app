@@ -27,7 +27,9 @@ export const queryClient = new QueryClient({
 });
 
 function useBaseUrl() {
-  return useAppStore((s) => s.getBaseUrl());
+  const { address, port } = useAppStore((s) => s.hostConfig);
+  if (!address) return '';
+  return `http://${address}:${port}`;
 }
 
 async function apiFetch<T>(baseUrl: string, path: string, init?: RequestInit): Promise<T> {
@@ -55,7 +57,7 @@ export function useSessionsList(status?: SessionStatus, archived?: boolean) {
   if (archived !== undefined) params.set('archived', String(archived));
   const qs = params.toString() ? `?${params.toString()}` : '';
   return useQuery<SessionSummary[]>({
-    queryKey: ['sessions', status, archived],
+    queryKey: ['sessions', baseUrl, status, archived],
     queryFn: () => apiFetch(baseUrl, `/api/sessions${qs}`),
     enabled: !!baseUrl,
     refetchInterval: 5000,
@@ -77,7 +79,7 @@ export function useArchiveSession() {
 export function useSession(id: string) {
   const baseUrl = useBaseUrl();
   return useQuery<Session>({
-    queryKey: ['session', id],
+    queryKey: ['session', baseUrl, id],
     queryFn: () => apiFetch(baseUrl, `/api/sessions/${id}`),
     enabled: !!baseUrl && !!id,
     refetchInterval: 5000,
@@ -186,7 +188,7 @@ export function usePauseSession(sessionId: string) {
 export function useTemplatesList() {
   const baseUrl = useBaseUrl();
   return useQuery<Template[]>({
-    queryKey: ['templates'],
+    queryKey: ['templates', baseUrl],
     queryFn: () => apiFetch(baseUrl, '/api/templates'),
     enabled: !!baseUrl,
     staleTime: 30000,
@@ -234,7 +236,7 @@ export function useDeleteTemplate() {
 export function useProjectsList() {
   const baseUrl = useBaseUrl();
   return useQuery<Project[]>({
-    queryKey: ['projects'],
+    queryKey: ['projects', baseUrl],
     queryFn: () => apiFetch(baseUrl, '/api/projects'),
     enabled: !!baseUrl,
     staleTime: 30000,
@@ -246,7 +248,7 @@ export function useProjectsList() {
 export function useServerStatus() {
   const baseUrl = useBaseUrl();
   return useQuery<ServerStatus>({
-    queryKey: ['server-status'],
+    queryKey: ['server-status', baseUrl],
     queryFn: () => apiFetch(baseUrl, '/api/status'),
     enabled: !!baseUrl,
     refetchInterval: 10000,
@@ -269,7 +271,7 @@ export function useRegisterPushToken() {
 export function usePushSettings() {
   const baseUrl = useBaseUrl();
   return useQuery<PushSettings>({
-    queryKey: ['push-settings'],
+    queryKey: ['push-settings', baseUrl],
     queryFn: () => apiFetch(baseUrl, '/api/push/settings'),
     enabled: !!baseUrl,
   });
