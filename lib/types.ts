@@ -77,6 +77,7 @@ export interface TemplateCreate {
   model?: string;
   max_budget_usd?: number;
   allowed_tools?: string[];
+  tags?: string[];
 }
 
 export interface Project {

@@ -24,6 +24,8 @@ export default function TemplateEditorScreen() {
   const [initialPrompt, setInitialPrompt] = useState('');
   const [model, setModel] = useState('');
   const [budgetCap, setBudgetCap] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState('');
 
   const createTemplate = useCreateTemplate();
   const updateTemplate = useUpdateTemplate();
@@ -36,6 +38,7 @@ export default function TemplateEditorScreen() {
       setInitialPrompt(template.initial_prompt);
       setModel(template.model || '');
       setBudgetCap(template.max_budget_usd ? String(template.max_budget_usd) : '');
+      setTags(template.tags || []);
     }
   }, [template]);
 
@@ -51,6 +54,7 @@ export default function TemplateEditorScreen() {
       initial_prompt: initialPrompt.trim(),
       model: model.trim() || undefined,
       max_budget_usd: budgetCap ? parseFloat(budgetCap) : undefined,
+      tags,
     };
 
     if (isNew) {
@@ -140,6 +144,50 @@ export default function TemplateEditorScreen() {
         keyboardType="decimal-pad"
       />
 
+      <Text style={styles.label}>Tags</Text>
+      <View style={styles.tagsContainer}>
+        {tags.map((tag) => (
+          <TouchableOpacity
+            key={tag}
+            style={styles.tagChip}
+            onPress={() => setTags((prev) => prev.filter((t) => t !== tag))}
+          >
+            <Text style={styles.tagChipText}>{tag}</Text>
+            <Ionicons name="close-circle" size={14} color={colors.textMuted} />
+          </TouchableOpacity>
+        ))}
+      </View>
+      <View style={styles.tagInputRow}>
+        <TextInput
+          style={[styles.input, { flex: 1 }]}
+          value={tagInput}
+          onChangeText={setTagInput}
+          placeholder="Add a tag..."
+          placeholderTextColor={colors.textMuted}
+          autoCapitalize="none"
+          onSubmitEditing={() => {
+            const trimmed = tagInput.trim();
+            if (trimmed && !tags.includes(trimmed)) {
+              setTags((prev) => [...prev, trimmed]);
+            }
+            setTagInput('');
+          }}
+          returnKeyType="done"
+        />
+        <TouchableOpacity
+          style={styles.addTagButton}
+          onPress={() => {
+            const trimmed = tagInput.trim();
+            if (trimmed && !tags.includes(trimmed)) {
+              setTags((prev) => [...prev, trimmed]);
+            }
+            setTagInput('');
+          }}
+        >
+          <Ionicons name="add" size={20} color={colors.primary} />
+        </TouchableOpacity>
+      </View>
+
       <TouchableOpacity
         style={[styles.saveButton, isPending && { opacity: 0.6 }]}
         onPress={handleSave}
@@ -191,6 +239,39 @@ const makeStyles = (c: ColorPalette) =>
       borderColor: c.inputBorder,
     },
     promptInput: { minHeight: 120, paddingTop: Spacing.md },
+    tagsContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: Spacing.xs,
+      marginBottom: Spacing.sm,
+    },
+    tagChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingHorizontal: Spacing.sm,
+      paddingVertical: Spacing.xs,
+      borderRadius: BorderRadius.xl,
+      backgroundColor: c.card,
+      borderWidth: 1,
+      borderColor: c.cardBorder,
+    },
+    tagChipText: { fontSize: FontSize.sm, color: c.text },
+    tagInputRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+    },
+    addTagButton: {
+      width: 40,
+      height: 40,
+      borderRadius: BorderRadius.md,
+      backgroundColor: c.card,
+      borderWidth: 1,
+      borderColor: c.inputBorder,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     saveButton: {
       backgroundColor: c.primary,
       borderRadius: BorderRadius.md,

@@ -7,12 +7,28 @@ import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useCreateSession, useProjectsList, useTemplatesList } from '../../../lib/api';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../../../constants/theme';
+import { ModelPicker } from '../../../components/ModelPicker';
+import { ChipSelector } from '../../../components/ChipSelector';
+
+const TOOL_OPTIONS = [
+  { value: 'Read', label: 'Read' },
+  { value: 'Write', label: 'Write' },
+  { value: 'Edit', label: 'Edit' },
+  { value: 'Bash', label: 'Bash' },
+  { value: 'Glob', label: 'Glob' },
+  { value: 'Grep', label: 'Grep' },
+  { value: 'WebFetch', label: 'WebFetch' },
+  { value: 'WebSearch', label: 'WebSearch' },
+  { value: 'Agent', label: 'Agent' },
+];
 
 export default function CreateSessionScreen() {
   const [name, setName] = useState('');
   const [projectDir, setProjectDir] = useState('');
   const [prompt, setPrompt] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
+  const [allowedTools, setAllowedTools] = useState<string[]>([]);
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
 
@@ -32,6 +48,8 @@ export default function CreateSessionScreen() {
         project_dir: projectDir.trim(),
         initial_prompt: prompt.trim(),
         template_id: selectedTemplate || undefined,
+        model: selectedModel || undefined,
+        allowed_tools: allowedTools.length > 0 ? allowedTools : undefined,
       },
       {
         onSuccess: (session) => {
@@ -96,6 +114,20 @@ export default function CreateSessionScreen() {
         placeholder="/path/to/project"
         placeholderTextColor={colors.textMuted}
         autoCapitalize="none"
+      />
+
+      <Text style={styles.label}>Model</Text>
+      <ModelPicker selected={selectedModel} onSelect={setSelectedModel} />
+
+      <ChipSelector
+        label="Allowed Tools"
+        options={TOOL_OPTIONS}
+        selected={allowedTools}
+        onToggle={(tool) =>
+          setAllowedTools((prev) =>
+            prev.includes(tool) ? prev.filter((t) => t !== tool) : [...prev, tool]
+          )
+        }
       />
 
       {templates && templates.length > 0 && (

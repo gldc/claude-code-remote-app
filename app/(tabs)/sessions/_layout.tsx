@@ -14,6 +14,7 @@ export default function SessionsLayout() {
       <Stack.Screen name="index" options={{ title: 'Sessions' }} />
       <Stack.Screen name="create" options={{ title: 'New Session' }} />
       <Stack.Screen name="[id]" options={{ title: 'Session' }} />
+      <Stack.Screen name="workflows" options={{ headerShown: false }} />
     </Stack>
   );
 }
