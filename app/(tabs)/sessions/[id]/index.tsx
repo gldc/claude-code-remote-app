@@ -26,7 +26,6 @@ export default function SessionDetailScreen() {
   const pauseSession = usePauseSession(id);
   const exportSession = useExportSession(id);
   const router = useRouter();
-  const appendMessage = useAppStore((s) => s.appendMessage);
   const clearMessages = useAppStore((s) => s.clearMessages);
   const pendingSkillInsert = useAppStore((s) => s.pendingSkillInsert);
   const setPendingSkillInsert = useAppStore((s) => s.setPendingSkillInsert);
@@ -171,11 +170,6 @@ export default function SessionDetailScreen() {
       {canSend && (
         <InputBar
           onSend={(text) => {
-            appendMessage(id, {
-              type: 'user_message',
-              data: { text },
-              timestamp: new Date().toISOString(),
-            });
             sendPrompt.mutate(text);
           }}
           onCommand={handleCommand}
