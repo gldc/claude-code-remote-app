@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
 import {
-  View, FlatList, Text, ActivityIndicator, StyleSheet,
+  View, FlatList, Text, TouchableOpacity, ActivityIndicator, StyleSheet,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSessionsList, useDeleteSession, useArchiveSession } from '../../../lib/api';
 import { SessionCard } from '../../../components/SessionCard';
@@ -22,6 +23,7 @@ export default function SessionListScreen() {
   const [filter, setFilter] = useState<string | null>('all');
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
+  const router = useRouter();
 
   const isArchived = filter === 'archived';
   const statusFilter = (filter && filter !== 'all' && filter !== 'archived')
@@ -52,6 +54,16 @@ export default function SessionListScreen() {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.workflowsButton}
+        activeOpacity={0.7}
+        onPress={() => router.push('/sessions/workflows')}
+      >
+        <Ionicons name="git-merge-outline" size={18} color={colors.primary} />
+        <Text style={styles.workflowsButtonText}>Workflows</Text>
+        <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
+      </TouchableOpacity>
+
       {isLoading ? (
         <ActivityIndicator style={styles.loader} color={colors.primary} />
       ) : (
@@ -92,6 +104,22 @@ export default function SessionListScreen() {
 const makeStyles = (c: ColorPalette) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: c.background },
+    workflowsButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: Spacing.sm,
+      paddingHorizontal: Spacing.lg,
+      paddingVertical: Spacing.md,
+      backgroundColor: c.card,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: c.cardBorder,
+    },
+    workflowsButtonText: {
+      flex: 1,
+      fontSize: FontSize.md,
+      fontWeight: '600',
+      color: c.primary,
+    },
     loader: { flex: 1, justifyContent: 'center' },
     listContent: {
       flexGrow: 1,

@@ -46,6 +46,36 @@ export default function SettingsScreen() {
         )}
       </View>
 
+      <Text style={styles.sectionTitle}>Usage</Text>
+      <View style={{ gap: Spacing.sm }}>
+        <TouchableOpacity
+          style={styles.navRow}
+          onPress={() => router.push('/(tabs)/settings/usage')}
+        >
+          <Ionicons name="speedometer" size={20} color={colors.primary} />
+          <Text style={styles.navRowText}>Usage Dashboard</Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.navRow}
+          onPress={() => router.push('/(tabs)/settings/analytics')}
+        >
+          <Ionicons name="analytics" size={20} color={colors.primary} />
+          <Text style={styles.navRowText}>Analytics</Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+        </TouchableOpacity>
+      </View>
+
+      <Text style={styles.sectionTitle}>Automation</Text>
+      <TouchableOpacity
+        style={styles.navRow}
+        onPress={() => router.push('/(tabs)/settings/rules')}
+      >
+        <Ionicons name="shield-checkmark" size={20} color={colors.primary} />
+        <Text style={styles.navRowText}>Approval Rules</Text>
+        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+      </TouchableOpacity>
+
       <Text style={styles.sectionTitle}>Templates</Text>
       <TouchableOpacity
         style={styles.navRow}
@@ -53,6 +83,16 @@ export default function SettingsScreen() {
       >
         <Ionicons name="document-text" size={20} color={colors.primary} />
         <Text style={styles.navRowText}>Manage Templates</Text>
+        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+      </TouchableOpacity>
+
+      <Text style={styles.sectionTitle}>MCP Servers</Text>
+      <TouchableOpacity
+        style={styles.navRow}
+        onPress={() => router.push('/(tabs)/settings/mcp')}
+      >
+        <Ionicons name="server" size={20} color={colors.primary} />
+        <Text style={styles.navRowText}>Manage MCP Servers</Text>
         <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
       </TouchableOpacity>
 

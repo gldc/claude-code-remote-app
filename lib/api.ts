@@ -15,6 +15,17 @@ import type {
   Project,
   ServerStatus,
   PushSettings,
+  UsageData,
+  GitStatus,
+  GitBranch,
+  GitLogEntry,
+  ApprovalRule,
+  SearchResult,
+  MCPServer,
+  MCPHealthResult,
+  Skill,
+  Workflow,
+  GitCheckResult,
 } from './types';
 
 export const queryClient = new QueryClient({
@@ -121,6 +132,22 @@ export function useDeleteSession() {
     mutationFn: (id: string) =>
       apiFetch<void>(baseUrl, `/api/sessions/${id}`, { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['sessions'] }),
+  });
+}
+
+export function useRenameSession() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, name }: { id: string; name: string }) =>
+      apiFetch(baseUrl, `/api/sessions/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ name }),
+      }),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ['session', baseUrl, variables.id] });
+      qc.invalidateQueries({ queryKey: ['sessions'] });
+    },
   });
 }
 
@@ -239,7 +266,48 @@ export function useProjectsList() {
     queryKey: ['projects', baseUrl],
     queryFn: () => apiFetch(baseUrl, '/api/projects'),
     enabled: !!baseUrl,
-    staleTime: 30000,
+    staleTime: 5000,
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      const hasCloning = data?.some((p) => p.status === 'cloning');
+      return hasCloning ? 3000 : 30000;
+    },
+  });
+}
+
+export function useCreateProject() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { name: string }) =>
+      apiFetch<Project>(baseUrl, '/api/projects/create', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['projects'] }),
+  });
+}
+
+export function useCloneProject() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { url: string; name?: string }) =>
+      apiFetch<Project>(baseUrl, '/api/projects/clone', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['projects'] }),
+  });
+}
+
+export function useGitCheck() {
+  const baseUrl = useBaseUrl();
+  return useQuery<GitCheckResult>({
+    queryKey: ['git-check', baseUrl],
+    queryFn: () => apiFetch(baseUrl, '/api/projects/git-check'),
+    enabled: !!baseUrl,
+    staleTime: 60000,
   });
 }
 
@@ -287,5 +355,269 @@ export function useUpdatePushSettings() {
         body: JSON.stringify(settings),
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['push-settings'] }),
+  });
+}
+
+// --- Usage (Group 1) ---
+
+export function useUsageData() {
+  const baseUrl = useBaseUrl();
+  return useQuery<UsageData>({
+    queryKey: ['usage', baseUrl],
+    queryFn: () => apiFetch(baseUrl, '/api/usage'),
+    enabled: !!baseUrl,
+    refetchInterval: 60000,
+  });
+}
+
+export function useUsageHistory(days: number = 7) {
+  const baseUrl = useBaseUrl();
+  return useQuery<UsageData[]>({
+    queryKey: ['usage-history', baseUrl, days],
+    queryFn: () => apiFetch(baseUrl, `/api/usage/history?days=${days}`),
+    enabled: !!baseUrl,
+    staleTime: 300000,
+  });
+}
+
+// --- Git (Group 3) ---
+
+export function useGitStatus(sessionId: string) {
+  const baseUrl = useBaseUrl();
+  return useQuery<GitStatus>({
+    queryKey: ['git-status', baseUrl, sessionId],
+    queryFn: () => apiFetch(baseUrl, `/api/sessions/${sessionId}/git/status`),
+    enabled: !!baseUrl && !!sessionId,
+    staleTime: 10000,
+  });
+}
+
+export function useGitDiff(sessionId: string, file?: string) {
+  const baseUrl = useBaseUrl();
+  const qs = file ? `?file=${encodeURIComponent(file)}` : '';
+  return useQuery<{ diff: string }>({
+    queryKey: ['git-diff', baseUrl, sessionId, file],
+    queryFn: () => apiFetch(baseUrl, `/api/sessions/${sessionId}/git/diff${qs}`),
+    enabled: !!baseUrl && !!sessionId,
+  });
+}
+
+export function useGitBranches(sessionId: string) {
+  const baseUrl = useBaseUrl();
+  return useQuery<GitBranch[]>({
+    queryKey: ['git-branches', baseUrl, sessionId],
+    queryFn: () => apiFetch(baseUrl, `/api/sessions/${sessionId}/git/branches`),
+    enabled: !!baseUrl && !!sessionId,
+  });
+}
+
+export function useGitLog(sessionId: string, n: number = 10) {
+  const baseUrl = useBaseUrl();
+  return useQuery<GitLogEntry[]>({
+    queryKey: ['git-log', baseUrl, sessionId],
+    queryFn: () => apiFetch(baseUrl, `/api/sessions/${sessionId}/git/log?n=${n}`),
+    enabled: !!baseUrl && !!sessionId,
+  });
+}
+
+// --- Approval Rules (Group 5) ---
+
+export function useApprovalRules() {
+  const baseUrl = useBaseUrl();
+  return useQuery<ApprovalRule[]>({
+    queryKey: ['approval-rules', baseUrl],
+    queryFn: () => apiFetch(baseUrl, '/api/approval-rules'),
+    enabled: !!baseUrl,
+  });
+}
+
+export function useCreateApprovalRule() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { tool_pattern: string; action: string; project_dir?: string }) =>
+      apiFetch<ApprovalRule>(baseUrl, '/api/approval-rules', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['approval-rules'] }),
+  });
+}
+
+export function useDeleteApprovalRule() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<void>(baseUrl, `/api/approval-rules/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['approval-rules'] }),
+  });
+}
+
+// --- Search & Export (Group 6) ---
+
+export function useSearchSessions(query: string) {
+  const baseUrl = useBaseUrl();
+  return useQuery<SearchResult[]>({
+    queryKey: ['session-search', baseUrl, query],
+    queryFn: () => apiFetch(baseUrl, `/api/sessions/search?q=${encodeURIComponent(query)}`),
+    enabled: !!baseUrl && query.length >= 2,
+  });
+}
+
+export function useExportSession(sessionId: string) {
+  const baseUrl = useBaseUrl();
+  return useMutation({
+    mutationFn: () => apiFetch(baseUrl, `/api/sessions/${sessionId}/export`),
+  });
+}
+
+// --- MCP (Group 7) ---
+
+export function useMCPServers(projectDir?: string) {
+  const baseUrl = useBaseUrl();
+  const qs = projectDir ? `?project_dir=${encodeURIComponent(projectDir)}` : '';
+  return useQuery<MCPServer[]>({
+    queryKey: ['mcp-servers', baseUrl, projectDir],
+    queryFn: () => apiFetch(baseUrl, `/api/mcp/servers${qs}`),
+    enabled: !!baseUrl,
+  });
+}
+
+export function useCreateMCPServer() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Partial<MCPServer>) =>
+      apiFetch<MCPServer>(baseUrl, '/api/mcp/servers', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['mcp-servers'] }),
+  });
+}
+
+export function useDeleteMCPServer() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) =>
+      apiFetch<void>(baseUrl, `/api/mcp/servers/${encodeURIComponent(name)}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['mcp-servers'] }),
+  });
+}
+
+export function useMCPHealthCheck(name: string) {
+  const baseUrl = useBaseUrl();
+  return useQuery<MCPHealthResult>({
+    queryKey: ['mcp-health', baseUrl, name],
+    queryFn: () => apiFetch(baseUrl, `/api/mcp/servers/${encodeURIComponent(name)}/health`),
+    enabled: false, // Manual trigger only
+  });
+}
+
+// --- Skills (Group 8) ---
+
+export function useSkills() {
+  const baseUrl = useBaseUrl();
+  return useQuery<Skill[]>({
+    queryKey: ['skills', baseUrl],
+    queryFn: () => apiFetch(baseUrl, '/api/skills'),
+    enabled: !!baseUrl,
+    staleTime: 300000,
+  });
+}
+
+// --- Workflows (Group 9) ---
+
+export function useWorkflows() {
+  const baseUrl = useBaseUrl();
+  return useQuery<Workflow[]>({
+    queryKey: ['workflows', baseUrl],
+    queryFn: () => apiFetch(baseUrl, '/api/workflows'),
+    enabled: !!baseUrl,
+  });
+}
+
+export function useWorkflow(id: string) {
+  const baseUrl = useBaseUrl();
+  return useQuery<Workflow>({
+    queryKey: ['workflow', baseUrl, id],
+    queryFn: () => apiFetch(baseUrl, `/api/workflows/${id}`),
+    enabled: !!baseUrl && !!id,
+    refetchInterval: 5000,
+  });
+}
+
+export function useCreateWorkflow() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { name: string; steps: any[] }) =>
+      apiFetch<Workflow>(baseUrl, '/api/workflows', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['workflows'] }),
+  });
+}
+
+export function useDeleteWorkflow() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<void>(baseUrl, `/api/workflows/${id}`, { method: 'DELETE' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['workflows'] }),
+  });
+}
+
+export function useRunWorkflow(id: string) {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      apiFetch(baseUrl, `/api/workflows/${id}/run`, { method: 'POST' }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['workflow', id] }),
+  });
+}
+
+export function useAddWorkflowStep(workflowId: string) {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { session_config: SessionCreate; depends_on?: string[] }) =>
+      apiFetch<Workflow>(baseUrl, `/api/workflows/${workflowId}/steps`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['workflow', baseUrl, workflowId] }),
+  });
+}
+
+// --- Collaboration (Group 10) ---
+
+export function useAddCollaborator(sessionId: string) {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (identity: string) =>
+      apiFetch(baseUrl, `/api/sessions/${sessionId}/collaborators`, {
+        method: 'POST',
+        body: JSON.stringify({ identity }),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['session', sessionId] }),
+  });
+}
+
+export function useRemoveCollaborator(sessionId: string) {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (identity: string) =>
+      apiFetch<void>(baseUrl, `/api/sessions/${sessionId}/collaborators/${encodeURIComponent(identity)}`, {
+        method: 'DELETE',
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['session', sessionId] }),
   });
 }

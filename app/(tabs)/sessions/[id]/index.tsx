@@ -1,18 +1,21 @@
 import { useEffect, useRef, useCallback } from 'react';
 import {
   View, FlatList, Text, TouchableOpacity, ActivityIndicator, Alert, StyleSheet,
+  KeyboardAvoidingView, Platform,
 } from 'react-native';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import type { SlashCommand } from '../../../constants/commands';
-import { useSession, usePauseSession, useSendPrompt } from '../../../lib/api';
-import { useSessionStream } from '../../../lib/websocket';
-import { useAppStore } from '../../../lib/store';
-import { MessageCard } from '../../../components/MessageCard';
-import { InputBar } from '../../../components/InputBar';
-import { StatusBadge } from '../../../components/StatusBadge';
-import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing } from '../../../constants/theme';
-import type { WSMessageData } from '../../../lib/types';
+import type { SlashCommand } from '../../../../constants/commands';
+import { useSession, usePauseSession, useSendPrompt } from '../../../../lib/api';
+import { useSessionStream } from '../../../../lib/websocket';
+import { useAppStore } from '../../../../lib/store';
+import { MessageCard } from '../../../../components/MessageCard';
+import { InputBar } from '../../../../components/InputBar';
+import { StatusBadge } from '../../../../components/StatusBadge';
+import { GitPanel } from '../../../../components/GitPanel';
+import { SessionInfoBar } from '../../../../components/SessionInfoBar';
+import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing } from '../../../../constants/theme';
+import type { WSMessageData } from '../../../../lib/types';
 
 export default function SessionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,8 +23,10 @@ export default function SessionDetailScreen() {
   const { messages, isConnected } = useSessionStream(id);
   const sendPrompt = useSendPrompt(id);
   const pauseSession = usePauseSession(id);
-  const appendMessage = useAppStore((s) => s.appendMessage);
+  const router = useRouter();
   const clearMessages = useAppStore((s) => s.clearMessages);
+  const pendingSkillInsert = useAppStore((s) => s.pendingSkillInsert);
+  const setPendingSkillInsert = useAppStore((s) => s.setPendingSkillInsert);
   const flatListRef = useRef<FlatList>(null);
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
@@ -36,6 +41,12 @@ export default function SessionDetailScreen() {
         break;
     }
   }, [id, clearMessages, session?.total_cost_usd]);
+
+  useEffect(() => {
+    if (pendingSkillInsert) {
+      setPendingSkillInsert(null);
+    }
+  }, [pendingSkillInsert, setPendingSkillInsert]);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -77,7 +88,11 @@ export default function SessionDetailScreen() {
   const isThinking = session.status === 'running';
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
       <Stack.Screen
         options={{
           headerTitle: () => (
@@ -86,26 +101,29 @@ export default function SessionDetailScreen() {
               <StatusBadge status={session.status} />
             </View>
           ),
-          headerRight: isActive
-            ? () => (
+          headerRight: () => (
+            <View style={{ flexDirection: 'row', gap: Spacing.md }}>
+              {isActive && (
                 <TouchableOpacity onPress={() => pauseSession.mutate()}>
                   <Ionicons name="pause-circle" size={24} color={colors.warning} />
                 </TouchableOpacity>
-              )
-            : undefined,
+              )}
+              <TouchableOpacity onPress={() => router.push({ pathname: '/(tabs)/sessions/[id]/settings', params: { id } })}>
+                <Ionicons name="ellipsis-horizontal-circle" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+          ),
         }}
       />
 
-      <View style={styles.infoBar}>
-        <Text style={styles.infoText} numberOfLines={1}>
-          {session.project_dir.split('/').pop()}
-          {session.git_branch ? ` (${session.git_branch})` : ''}
-          {' | '}${session.total_cost_usd.toFixed(2)}
-          {session.current_model ? ` | ${session.current_model}` : ''}
-          {session.context_percent > 0 ? ` | ${session.context_percent}% ctx` : ''}
-        </Text>
-        <View style={[styles.connDot, { backgroundColor: isConnected ? colors.success : colors.error }]} />
-      </View>
+      <SessionInfoBar
+        projectDir={session.project_dir}
+        gitBranch={session.git_branch}
+        costUsd={session.total_cost_usd}
+        model={session.current_model}
+        contextPercent={session.context_percent}
+        isConnected={isConnected}
+      />
 
       <FlatList
         ref={flatListRef}
@@ -113,6 +131,7 @@ export default function SessionDetailScreen() {
         keyExtractor={(_, i) => String(i)}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
+        ListHeaderComponent={<GitPanel sessionId={id} />}
         ListEmptyComponent={
           !isThinking ? (
             <View style={styles.empty}>
@@ -140,19 +159,15 @@ export default function SessionDetailScreen() {
       {canSend && (
         <InputBar
           onSend={(text) => {
-            appendMessage(id, {
-              type: 'user_message',
-              data: { text },
-              timestamp: new Date().toISOString(),
-            });
             sendPrompt.mutate(text);
           }}
           onCommand={handleCommand}
           disabled={sendPrompt.isPending}
           placeholder="Message Claude..."
+          initialText={pendingSkillInsert}
         />
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -162,17 +177,6 @@ const makeStyles = (c: ColorPalette) =>
     loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     headerTitleRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
     headerTitleText: { fontSize: FontSize.lg, fontWeight: '600', color: c.text, flexShrink: 1 },
-    infoBar: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.xs,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: c.cardBorder,
-    },
-    infoText: { fontSize: FontSize.xs, color: c.textMuted },
-    connDot: { width: 8, height: 8, borderRadius: 4 },
     listContent: {
       paddingVertical: Spacing.md,
       paddingBottom: Spacing.xl,

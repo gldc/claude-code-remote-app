@@ -3,6 +3,7 @@ import type { WSMessageData } from '../lib/types';
 import { AssistantTextCard } from './AssistantTextCard';
 import { ToolUseCard } from './ToolUseCard';
 import { ToolResultCard } from './ToolResultCard';
+import { BashOutputCard } from './BashOutputCard';
 import { ApprovalCard } from './ApprovalCard';
 import { ErrorCard } from './ErrorCard';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
@@ -51,10 +52,12 @@ export function MessageCard({ message, sessionId, isFirstInGroup }: Props) {
     case 'tool_result':
       return (
         <ToolResultCard
-          output={message.data.output}
+          output={message.data.output ?? message.data.content ?? ''}
           isError={message.data.is_error}
         />
       );
+    case 'bash_output':
+      return <BashOutputCard output={message.data.output} />;
     case 'approval_request':
       return (
         <ApprovalCard
@@ -62,10 +65,20 @@ export function MessageCard({ message, sessionId, isFirstInGroup }: Props) {
           toolName={message.data.tool_name}
           toolInput={message.data.tool_input}
           description={message.data.description}
+          resolved={message.data.resolved}
+          approved={message.data.approved}
         />
       );
     case 'error':
       return <ErrorCard message={message.data.message || 'Unknown error'} />;
+    case 'rate_limit':
+      return (
+        <View style={styles.statusRow}>
+          <View style={styles.statusLine} />
+          <Text style={styles.statusText}>Rate limited — retrying</Text>
+          <View style={styles.statusLine} />
+        </View>
+      );
     case 'status_change':
       return (
         <View style={styles.statusRow}>

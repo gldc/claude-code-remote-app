@@ -14,6 +14,10 @@ export default function SettingsLayout() {
       <Stack.Screen name="index" options={{ title: 'Settings' }} />
       <Stack.Screen name="templates/index" options={{ title: 'Templates' }} />
       <Stack.Screen name="templates/[id]" options={{ title: 'Template' }} />
+      <Stack.Screen name="usage" options={{ title: 'Usage' }} />
+      <Stack.Screen name="analytics" options={{ title: 'Analytics' }} />
+      <Stack.Screen name="rules" options={{ title: 'Approval Rules' }} />
+      <Stack.Screen name="mcp" options={{ title: 'MCP Servers' }} />
     </Stack>
   );
 }
