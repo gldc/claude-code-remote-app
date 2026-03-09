@@ -5,8 +5,9 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Share } from 'react-native';
 import type { SlashCommand } from '../../../../constants/commands';
-import { useSession, usePauseSession, useSendPrompt } from '../../../../lib/api';
+import { useSession, usePauseSession, useSendPrompt, useExportSession } from '../../../../lib/api';
 import { useSessionStream } from '../../../../lib/websocket';
 import { useAppStore } from '../../../../lib/store';
 import { MessageCard } from '../../../../components/MessageCard';
@@ -23,7 +24,9 @@ export default function SessionDetailScreen() {
   const { messages, isConnected } = useSessionStream(id);
   const sendPrompt = useSendPrompt(id);
   const pauseSession = usePauseSession(id);
+  const exportSession = useExportSession(id);
   const router = useRouter();
+  const appendMessage = useAppStore((s) => s.appendMessage);
   const clearMessages = useAppStore((s) => s.clearMessages);
   const pendingSkillInsert = useAppStore((s) => s.pendingSkillInsert);
   const setPendingSkillInsert = useAppStore((s) => s.setPendingSkillInsert);
@@ -103,6 +106,15 @@ export default function SessionDetailScreen() {
           ),
           headerRight: () => (
             <View style={{ flexDirection: 'row', gap: Spacing.md }}>
+              <TouchableOpacity
+                onPress={() =>
+                  exportSession.mutate(undefined, {
+                    onSuccess: (data) => Share.share({ message: JSON.stringify(data, null, 2) }),
+                  })
+                }
+              >
+                <Ionicons name="share-outline" size={22} color={colors.text} />
+              </TouchableOpacity>
               {isActive && (
                 <TouchableOpacity onPress={() => pauseSession.mutate()}>
                   <Ionicons name="pause-circle" size={24} color={colors.warning} />
@@ -159,6 +171,11 @@ export default function SessionDetailScreen() {
       {canSend && (
         <InputBar
           onSend={(text) => {
+            appendMessage(id, {
+              type: 'user_message',
+              data: { text },
+              timestamp: new Date().toISOString(),
+            });
             sendPrompt.mutate(text);
           }}
           onCommand={handleCommand}

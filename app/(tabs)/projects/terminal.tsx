@@ -1,13 +1,15 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   View,
   TouchableOpacity,
   Text,
   StyleSheet,
   Platform,
+  Keyboard,
+  Animated,
   useColorScheme,
 } from "react-native";
-import { useLocalSearchParams, Stack, router } from "expo-router";
+import { useLocalSearchParams, Stack, router, useNavigation } from "expo-router";
 import { useAppStore } from "../../../lib/store";
 import { useColors, FontSize, Spacing } from "../../../constants/theme";
 import TerminalView from "../../../components/TerminalView";
@@ -29,6 +31,43 @@ export default function TerminalScreen() {
   const colorScheme = useColorScheme();
   const [ctrlActive, setCtrlActive] = useState(false);
   const [sendKey, setSendKey] = useState("");
+  const keyboardHeight = useRef(new Animated.Value(0)).current;
+  const navigation = useNavigation();
+
+  // Hide tab bar on this screen
+  useEffect(() => {
+    const parent = navigation.getParent();
+    parent?.setOptions({ tabBarStyle: { display: "none" } });
+    return () => {
+      parent?.setOptions({ tabBarStyle: undefined });
+    };
+  }, [navigation]);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      Animated.timing(keyboardHeight, {
+        toValue: e.endCoordinates.height,
+        duration: e.duration || 250,
+        useNativeDriver: false,
+      }).start();
+    });
+
+    const hideSub = Keyboard.addListener(hideEvent, (e) => {
+      Animated.timing(keyboardHeight, {
+        toValue: 0,
+        duration: (e as any).duration || 250,
+        useNativeDriver: false,
+      }).start();
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [keyboardHeight]);
 
   const wsUrl = `ws://${hostConfig.address}:${hostConfig.port}/ws/terminal/${id}`;
   const theme = colorScheme === "dark" ? "dark" : "light";
@@ -117,6 +156,8 @@ export default function TerminalScreen() {
           </TouchableOpacity>
         ))}
       </View>
+
+      <Animated.View style={{ height: keyboardHeight }} />
     </View>
   );
 }
