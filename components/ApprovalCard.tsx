@@ -10,14 +10,18 @@ interface Props {
   toolName: string;
   toolInput: Record<string, any>;
   description: string;
+  resolved?: boolean;
+  approved?: boolean;
   approvalCount?: { current: number; required: number };
 }
 
-export function ApprovalCard({ sessionId, toolName, toolInput, description, approvalCount }: Props) {
+export function ApprovalCard({ sessionId, toolName, toolInput, description, resolved, approved, approvalCount }: Props) {
   const approve = useApproveToolUse(sessionId);
   const deny = useDenyToolUse(sessionId);
   const createRule = useCreateApprovalRule();
-  const [decision, setDecision] = useState<'approved' | 'denied' | null>(null);
+  const [decision, setDecision] = useState<'approved' | 'denied' | null>(
+    resolved ? (approved ? 'approved' : 'denied') : null,
+  );
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
 

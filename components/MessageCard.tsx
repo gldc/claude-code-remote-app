@@ -52,7 +52,7 @@ export function MessageCard({ message, sessionId, isFirstInGroup }: Props) {
     case 'tool_result':
       return (
         <ToolResultCard
-          output={message.data.output}
+          output={message.data.output ?? message.data.content ?? ''}
           isError={message.data.is_error}
         />
       );
@@ -65,10 +65,20 @@ export function MessageCard({ message, sessionId, isFirstInGroup }: Props) {
           toolName={message.data.tool_name}
           toolInput={message.data.tool_input}
           description={message.data.description}
+          resolved={message.data.resolved}
+          approved={message.data.approved}
         />
       );
     case 'error':
       return <ErrorCard message={message.data.message || 'Unknown error'} />;
+    case 'rate_limit':
+      return (
+        <View style={styles.statusRow}>
+          <View style={styles.statusLine} />
+          <Text style={styles.statusText}>Rate limited — retrying</Text>
+          <View style={styles.statusLine} />
+        </View>
+      );
     case 'status_change':
       return (
         <View style={styles.statusRow}>
