@@ -25,6 +25,7 @@ import type {
   MCPHealthResult,
   Skill,
   Workflow,
+  GitCheckResult,
 } from './types';
 
 export const queryClient = new QueryClient({
@@ -131,6 +132,22 @@ export function useDeleteSession() {
     mutationFn: (id: string) =>
       apiFetch<void>(baseUrl, `/api/sessions/${id}`, { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['sessions'] }),
+  });
+}
+
+export function useRenameSession() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, name }: { id: string; name: string }) =>
+      apiFetch(baseUrl, `/api/sessions/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ name }),
+      }),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ['session', baseUrl, variables.id] });
+      qc.invalidateQueries({ queryKey: ['sessions'] });
+    },
   });
 }
 
@@ -249,7 +266,48 @@ export function useProjectsList() {
     queryKey: ['projects', baseUrl],
     queryFn: () => apiFetch(baseUrl, '/api/projects'),
     enabled: !!baseUrl,
-    staleTime: 30000,
+    staleTime: 5000,
+    refetchInterval: (query) => {
+      const data = query.state.data;
+      const hasCloning = data?.some((p) => p.status === 'cloning');
+      return hasCloning ? 3000 : 30000;
+    },
+  });
+}
+
+export function useCreateProject() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { name: string }) =>
+      apiFetch<Project>(baseUrl, '/api/projects/create', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['projects'] }),
+  });
+}
+
+export function useCloneProject() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { url: string; name?: string }) =>
+      apiFetch<Project>(baseUrl, '/api/projects/clone', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['projects'] }),
+  });
+}
+
+export function useGitCheck() {
+  const baseUrl = useBaseUrl();
+  return useQuery<GitCheckResult>({
+    queryKey: ['git-check', baseUrl],
+    queryFn: () => apiFetch(baseUrl, '/api/projects/git-check'),
+    enabled: !!baseUrl,
+    staleTime: 60000,
   });
 }
 
@@ -521,6 +579,19 @@ export function useRunWorkflow(id: string) {
     mutationFn: () =>
       apiFetch(baseUrl, `/api/workflows/${id}/run`, { method: 'POST' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['workflow', id] }),
+  });
+}
+
+export function useAddWorkflowStep(workflowId: string) {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { session_config: SessionCreate; depends_on?: string[] }) =>
+      apiFetch<Workflow>(baseUrl, `/api/workflows/${workflowId}/steps`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['workflow', baseUrl, workflowId] }),
   });
 }
 
