@@ -9,6 +9,8 @@ export default function UsageScreen() {
   const styles = useThemedStyles(colors, makeStyles);
   const { data: usage, refetch, isLoading } = useUsageData();
 
+  const isUnavailable = !usage || usage.plan_tier === 'unknown';
+
   return (
     <ScrollView
       style={styles.container}
@@ -18,43 +20,54 @@ export default function UsageScreen() {
         <Text style={styles.planText}>{usage?.plan_tier ?? 'Unknown'} Plan</Text>
       </View>
 
-      <View style={styles.section}>
-        <ProgressMeter
-          label="Session (5-hour)"
-          percent={usage?.session.percent_remaining ?? 0}
-        />
-        <TimeCountdown seconds={usage?.session.resets_in_seconds ?? 0} />
-      </View>
+      {isUnavailable && (
+        <View style={styles.infoBanner}>
+          <Text style={styles.infoBannerText}>
+            Usage data requires a Claude Max subscription with OAuth authentication.
+            If you're using API keys, usage tracking is not available.
+          </Text>
+        </View>
+      )}
 
-      <View style={styles.section}>
-        <ProgressMeter
-          label="Weekly"
-          percent={usage?.weekly.percent_remaining ?? 0}
-          reservePercent={usage?.weekly.reserve_percent ?? 0}
-        />
-        <TimeCountdown seconds={usage?.weekly.resets_in_seconds ?? 0} />
-      </View>
+      {!isUnavailable && (
+        <>
+          <View style={styles.section}>
+            <ProgressMeter
+              label="Session (5-hour)"
+              percent={usage.session.percent_remaining}
+            />
+            <TimeCountdown seconds={usage.session.resets_in_seconds} />
+          </View>
 
-      <View style={styles.section}>
-        <ProgressMeter
-          label="Sonnet"
-          percent={usage?.sonnet.percent_remaining ?? 0}
-        />
-        <TimeCountdown seconds={usage?.sonnet.resets_in_seconds ?? 0} />
-      </View>
+          <View style={styles.section}>
+            <ProgressMeter
+              label="Weekly"
+              percent={usage.weekly.percent_remaining}
+              reservePercent={usage.weekly.reserve_percent}
+            />
+            <TimeCountdown seconds={usage.weekly.resets_in_seconds} />
+          </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Extra Usage</Text>
-        <ProgressMeter
-          label={`$${(usage?.extra_usage.monthly_spend ?? 0).toFixed(2)} / $${(usage?.extra_usage.monthly_limit ?? 0).toFixed(2)}`}
-          percent={
-            usage
-              ? (1 - usage.extra_usage.monthly_spend / Math.max(usage.extra_usage.monthly_limit, 1)) * 100
-              : 100
-          }
-          size="sm"
-        />
-      </View>
+          <View style={styles.section}>
+            <ProgressMeter
+              label="Sonnet"
+              percent={usage.sonnet.percent_remaining}
+            />
+            <TimeCountdown seconds={usage.sonnet.resets_in_seconds} />
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Extra Usage</Text>
+            <ProgressMeter
+              label={`$${usage.extra_usage.monthly_spend.toFixed(2)} / $${usage.extra_usage.monthly_limit.toFixed(2)}`}
+              percent={
+                (1 - usage.extra_usage.monthly_spend / Math.max(usage.extra_usage.monthly_limit, 1)) * 100
+              }
+              size="sm"
+            />
+          </View>
+        </>
+      )}
 
       <View style={{ height: Spacing.xxl * 2 }} />
     </ScrollView>
@@ -87,5 +100,18 @@ const makeStyles = (c: ColorPalette) =>
       fontWeight: '600',
       color: c.textMuted,
       marginBottom: Spacing.xs,
+    },
+    infoBanner: {
+      backgroundColor: c.primary + '10',
+      borderRadius: BorderRadius.lg,
+      padding: Spacing.lg,
+      borderWidth: 1,
+      borderColor: c.primary + '30',
+      marginBottom: Spacing.md,
+    },
+    infoBannerText: {
+      fontSize: FontSize.sm,
+      color: c.textMuted,
+      lineHeight: FontSize.sm * 1.5,
     },
   });
