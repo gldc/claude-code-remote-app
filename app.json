@@ -11,8 +11,16 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.gldc.claudecoderemote",
+      "icon": "./assets/ccr.icon",
       "infoPlist": {
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification",
+          "remote-notification"
+        ],
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
       }
     },
     "plugins": [
@@ -24,10 +32,25 @@
           "icon": "./assets/images/notification-icon.png",
           "color": "#C4613C"
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#cb7b5e",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2b217786-e650-43c4-bf18-a36f9ce1aa97"
+      }
+    },
+    "owner": "gldcio"
   }
 }
