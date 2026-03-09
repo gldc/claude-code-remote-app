@@ -1,21 +1,22 @@
 import { useEffect, useRef, useCallback } from 'react';
 import {
   View, FlatList, Text, TouchableOpacity, ActivityIndicator, Alert, StyleSheet,
+  KeyboardAvoidingView, Platform,
 } from 'react-native';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Share } from 'react-native';
-import type { SlashCommand } from '../../../constants/commands';
-import { useSession, usePauseSession, useSendPrompt, useExportSession } from '../../../lib/api';
-import { useSessionStream } from '../../../lib/websocket';
-import { useAppStore } from '../../../lib/store';
-import { MessageCard } from '../../../components/MessageCard';
-import { InputBar } from '../../../components/InputBar';
-import { StatusBadge } from '../../../components/StatusBadge';
-import { GitPanel } from '../../../components/GitPanel';
-import { SessionInfoBar } from '../../../components/SessionInfoBar';
-import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing } from '../../../constants/theme';
-import type { WSMessageData } from '../../../lib/types';
+import type { SlashCommand } from '../../../../constants/commands';
+import { useSession, usePauseSession, useSendPrompt, useExportSession } from '../../../../lib/api';
+import { useSessionStream } from '../../../../lib/websocket';
+import { useAppStore } from '../../../../lib/store';
+import { MessageCard } from '../../../../components/MessageCard';
+import { InputBar } from '../../../../components/InputBar';
+import { StatusBadge } from '../../../../components/StatusBadge';
+import { GitPanel } from '../../../../components/GitPanel';
+import { SessionInfoBar } from '../../../../components/SessionInfoBar';
+import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing } from '../../../../constants/theme';
+import type { WSMessageData } from '../../../../lib/types';
 
 export default function SessionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -24,8 +25,11 @@ export default function SessionDetailScreen() {
   const sendPrompt = useSendPrompt(id);
   const pauseSession = usePauseSession(id);
   const exportSession = useExportSession(id);
+  const router = useRouter();
   const appendMessage = useAppStore((s) => s.appendMessage);
   const clearMessages = useAppStore((s) => s.clearMessages);
+  const pendingSkillInsert = useAppStore((s) => s.pendingSkillInsert);
+  const setPendingSkillInsert = useAppStore((s) => s.setPendingSkillInsert);
   const flatListRef = useRef<FlatList>(null);
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
@@ -40,6 +44,12 @@ export default function SessionDetailScreen() {
         break;
     }
   }, [id, clearMessages, session?.total_cost_usd]);
+
+  useEffect(() => {
+    if (pendingSkillInsert) {
+      setPendingSkillInsert(null);
+    }
+  }, [pendingSkillInsert, setPendingSkillInsert]);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -81,7 +91,11 @@ export default function SessionDetailScreen() {
   const isThinking = session.status === 'running';
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
       <Stack.Screen
         options={{
           headerTitle: () => (
@@ -106,6 +120,9 @@ export default function SessionDetailScreen() {
                   <Ionicons name="pause-circle" size={24} color={colors.warning} />
                 </TouchableOpacity>
               )}
+              <TouchableOpacity onPress={() => router.push({ pathname: '/(tabs)/sessions/[id]/settings', params: { id } })}>
+                <Ionicons name="ellipsis-horizontal-circle" size={24} color={colors.text} />
+              </TouchableOpacity>
             </View>
           ),
         }}
@@ -164,9 +181,10 @@ export default function SessionDetailScreen() {
           onCommand={handleCommand}
           disabled={sendPrompt.isPending}
           placeholder="Message Claude..."
+          initialText={pendingSkillInsert}
         />
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

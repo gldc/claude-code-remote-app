@@ -88,6 +88,14 @@ export interface Project {
   type: ProjectType;
   session_count: number;
   last_session: string | null;
+  status: 'ready' | 'cloning' | 'error';
+  error_message: string | null;
+}
+
+export interface GitCheckResult {
+  git: boolean;
+  ssh_key: boolean;
+  github_ssh: boolean;
 }
 
 export interface ServerStatus {

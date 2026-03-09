@@ -1,13 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  ActivityIndicator, StyleSheet,
+  ActivityIndicator, StyleSheet, TextInput, Alert,
 } from 'react-native';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useWorkflow, useRunWorkflow } from '../../../../lib/api';
+import * as Haptics from 'expo-haptics';
+import { useWorkflow, useRunWorkflow, useAddWorkflowStep, useProjectsList } from '../../../../lib/api';
 import { DAGView } from '../../../../components/DAGView';
 import { StatusBadge } from '../../../../components/StatusBadge';
+import { ModelPicker } from '../../../../components/ModelPicker';
 import { useColors, useThemedStyles, type ColorPalette, Spacing, FontSize, BorderRadius } from '../../../../constants/theme';
 import type { WorkflowStepStatus } from '../../../../lib/types';
 
@@ -19,6 +21,15 @@ export default function WorkflowDetailScreen() {
 
   const { data: workflow, isLoading } = useWorkflow(id ?? '');
   const runWorkflow = useRunWorkflow(id ?? '');
+  const addStep = useAddWorkflowStep(id ?? '');
+  const { data: projects } = useProjectsList();
+
+  const [showForm, setShowForm] = useState(false);
+  const [stepName, setStepName] = useState('');
+  const [projectDir, setProjectDir] = useState('');
+  const [prompt, setPrompt] = useState('');
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
+  const [selectedDeps, setSelectedDeps] = useState<string[]>([]);
 
   useEffect(() => {
     if (workflow) {
@@ -30,6 +41,48 @@ export default function WorkflowDetailScreen() {
       });
     }
   }, [workflow, navigation]);
+
+  const resetForm = () => {
+    setStepName('');
+    setProjectDir('');
+    setPrompt('');
+    setSelectedModel(null);
+    setSelectedDeps([]);
+  };
+
+  const handleAddStep = () => {
+    if (!stepName.trim() || !projectDir.trim() || !prompt.trim()) {
+      Alert.alert('Missing Fields', 'Name, project, and prompt are required.');
+      return;
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    addStep.mutate(
+      {
+        session_config: {
+          name: stepName.trim(),
+          project_dir: projectDir.trim(),
+          initial_prompt: prompt.trim(),
+          model: selectedModel || undefined,
+        },
+        depends_on: selectedDeps,
+      },
+      {
+        onSuccess: () => {
+          resetForm();
+          setShowForm(false);
+        },
+        onError: (err) => {
+          Alert.alert('Error', err instanceof Error ? err.message : 'Failed to add step');
+        },
+      }
+    );
+  };
+
+  const toggleDep = (stepId: string) => {
+    setSelectedDeps((prev) =>
+      prev.includes(stepId) ? prev.filter((d) => d !== stepId) : [...prev, stepId]
+    );
+  };
 
   if (isLoading || !workflow) {
     return (
@@ -59,7 +112,7 @@ export default function WorkflowDetailScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Dependency Graph</Text>
         {dagNodes.length > 0 ? (
@@ -92,6 +145,107 @@ export default function WorkflowDetailScreen() {
             )}
           </View>
         ))}
+
+        {!showForm ? (
+          <TouchableOpacity
+            style={styles.addStepButton}
+            activeOpacity={0.7}
+            onPress={() => setShowForm(true)}
+          >
+            <Ionicons name="add-circle-outline" size={20} color={colors.primary} />
+            <Text style={styles.addStepButtonText}>Add Step</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.formCard}>
+            <View style={styles.formHeader}>
+              <Text style={styles.formTitle}>New Step</Text>
+              <TouchableOpacity onPress={() => { setShowForm(false); resetForm(); }}>
+                <Ionicons name="close" size={22} color={colors.textMuted} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.label}>Name</Text>
+            <TextInput
+              style={styles.input}
+              value={stepName}
+              onChangeText={setStepName}
+              placeholder="e.g., run-tests"
+              placeholderTextColor={colors.textMuted}
+              autoCapitalize="none"
+            />
+
+            <Text style={styles.label}>Project Directory</Text>
+            {projects && projects.length > 0 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
+                {projects.map((p) => (
+                  <TouchableOpacity
+                    key={p.id}
+                    style={[styles.chip, projectDir === p.path && styles.chipActive]}
+                    onPress={() => setProjectDir(p.path)}
+                  >
+                    <Text style={[styles.chipText, projectDir === p.path && styles.chipTextActive]}>
+                      {p.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+            <TextInput
+              style={styles.input}
+              value={projectDir}
+              onChangeText={setProjectDir}
+              placeholder="/path/to/project"
+              placeholderTextColor={colors.textMuted}
+              autoCapitalize="none"
+            />
+
+            <Text style={styles.label}>Prompt</Text>
+            <TextInput
+              style={[styles.input, styles.promptInput]}
+              value={prompt}
+              onChangeText={setPrompt}
+              placeholder="What should this step do?"
+              placeholderTextColor={colors.textMuted}
+              multiline
+              textAlignVertical="top"
+            />
+
+            <Text style={styles.label}>Model</Text>
+            <ModelPicker selected={selectedModel} onSelect={setSelectedModel} />
+
+            {workflow.steps.length > 0 && (
+              <>
+                <Text style={styles.label}>Depends On</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
+                  {workflow.steps.map((s) => (
+                    <TouchableOpacity
+                      key={s.id}
+                      style={[styles.chip, selectedDeps.includes(s.id) && styles.chipActive]}
+                      onPress={() => toggleDep(s.id)}
+                    >
+                      <Text style={[styles.chipText, selectedDeps.includes(s.id) && styles.chipTextActive]}>
+                        {s.session_config.name || s.id}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            )}
+
+            <TouchableOpacity
+              style={[styles.submitButton, addStep.isPending && { opacity: 0.6 }]}
+              onPress={handleAddStep}
+              disabled={addStep.isPending}
+              activeOpacity={0.8}
+            >
+              {addStep.isPending ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.submitButtonText}>Add Step</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       <TouchableOpacity
@@ -142,6 +296,80 @@ const makeStyles = (c: ColorPalette) =>
     stepStatus: { fontSize: FontSize.xs, fontWeight: '600' },
     stepDeps: { fontSize: FontSize.xs, color: c.textMuted, marginTop: Spacing.xs },
     stepSession: { fontSize: FontSize.xs, color: c.textSecondary, marginTop: 2 },
+    // Add Step button
+    addStepButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: Spacing.sm,
+      paddingVertical: Spacing.md,
+      borderRadius: BorderRadius.md,
+      borderWidth: 1,
+      borderColor: c.primary,
+      borderStyle: 'dashed',
+      marginTop: Spacing.sm,
+    },
+    addStepButtonText: {
+      fontSize: FontSize.md, fontWeight: '600', color: c.primary,
+    },
+    // Form
+    formCard: {
+      backgroundColor: c.card,
+      borderRadius: BorderRadius.md,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: c.cardBorder,
+      padding: Spacing.md,
+      marginTop: Spacing.sm,
+    },
+    formHeader: {
+      flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+      marginBottom: Spacing.sm,
+    },
+    formTitle: { fontSize: FontSize.md, fontWeight: '700', color: c.text },
+    label: {
+      fontSize: FontSize.sm,
+      fontWeight: '600',
+      color: c.textMuted,
+      marginBottom: Spacing.xs,
+      marginTop: Spacing.md,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    input: {
+      backgroundColor: c.background,
+      borderRadius: BorderRadius.md,
+      padding: Spacing.md,
+      color: c.text,
+      fontSize: FontSize.md,
+      borderWidth: 1,
+      borderColor: c.inputBorder,
+    },
+    promptInput: { minHeight: 80, paddingTop: Spacing.md },
+    chipRow: { marginBottom: Spacing.sm },
+    chip: {
+      paddingHorizontal: Spacing.md,
+      paddingVertical: Spacing.xs,
+      borderRadius: BorderRadius.xl,
+      borderWidth: 1,
+      borderColor: c.cardBorder,
+      backgroundColor: c.background,
+      marginRight: Spacing.sm,
+    },
+    chipActive: {
+      borderColor: c.primary,
+      backgroundColor: c.primary + '20',
+    },
+    chipText: { fontSize: FontSize.sm, color: c.textMuted },
+    chipTextActive: { color: c.primary },
+    submitButton: {
+      backgroundColor: c.primary,
+      borderRadius: BorderRadius.md,
+      padding: Spacing.md,
+      alignItems: 'center',
+      marginTop: Spacing.lg,
+    },
+    submitButtonText: { fontSize: FontSize.md, fontWeight: '700', color: '#fff' },
+    // Run button
     runButton: {
       flexDirection: 'row',
       alignItems: 'center',

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useAppStore } from './store';
-import type { WSMessageData, WSMessageType } from './types';
+import type { WSMessageData } from './types';
 
 const VALID_WS_MESSAGE_TYPES: Set<string> = new Set<string>([
   'assistant_text',
@@ -26,6 +26,9 @@ function isValidWSMessage(msg: unknown): msg is WSMessageData {
 
 const EMPTY_MESSAGES: WSMessageData[] = [];
 
+// Batch backfill messages arriving within this window (ms) after connect
+const BACKFILL_WINDOW_MS = 200;
+
 export function useSessionStream(sessionId: string | null) {
   const hostConfig = useAppStore((s) => s.hostConfig);
   const appendMessage = useAppStore((s) => s.appendMessage);
@@ -38,6 +41,18 @@ export function useSessionStream(sessionId: string | null) {
   const reconnectTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const unmountedRef = useRef(false);
 
+  // Backfill buffering: collect messages arriving right after connect, flush as batch
+  const backfillBuffer = useRef<WSMessageData[]>([]);
+  const backfillTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const isBackfilling = useRef(false);
+
+  const flushBackfill = useCallback(() => {
+    if (!sessionId || backfillBuffer.current.length === 0) return;
+    setMessages(sessionId, backfillBuffer.current);
+    backfillBuffer.current = [];
+    isBackfilling.current = false;
+  }, [sessionId, setMessages]);
+
   const connect = useCallback(() => {
     if (!sessionId || !hostConfig.address || unmountedRef.current) return;
 
@@ -47,24 +62,39 @@ export function useSessionStream(sessionId: string | null) {
 
     ws.onopen = () => {
       setIsConnected(true);
+      // Start backfill window — messages arriving quickly after connect are batched
+      isBackfilling.current = true;
+      backfillBuffer.current = [];
+      backfillTimer.current = setTimeout(() => {
+        flushBackfill();
+      }, BACKFILL_WINDOW_MS);
     };
 
     ws.onmessage = (event) => {
       try {
         const parsed: unknown = JSON.parse(event.data);
-        if (!isValidWSMessage(parsed)) {
-          console.warn('[WS] Dropping invalid message:', event.data);
-          return;
-        }
+        if (!isValidWSMessage(parsed)) return;
         if (parsed.type === 'ping') return;
-        appendMessage(sessionId, parsed);
+
+        if (isBackfilling.current) {
+          // Buffer during backfill window
+          backfillBuffer.current.push(parsed);
+        } else {
+          // Live message — append immediately
+          appendMessage(sessionId, parsed);
+        }
       } catch {
-        console.warn('[WS] Failed to parse message:', event.data);
+        // Ignore parse failures
       }
     };
 
     ws.onclose = () => {
       setIsConnected(false);
+      // Flush any remaining backfill on disconnect
+      if (isBackfilling.current) {
+        if (backfillTimer.current) clearTimeout(backfillTimer.current);
+        flushBackfill();
+      }
       if (!unmountedRef.current) {
         reconnectTimer.current = setTimeout(connect, 3000);
       }
@@ -73,14 +103,20 @@ export function useSessionStream(sessionId: string | null) {
     ws.onerror = () => {
       ws.close();
     };
-  }, [sessionId, hostConfig.address, hostConfig.port, appendMessage]);
+  }, [sessionId, hostConfig.address, hostConfig.port, appendMessage, flushBackfill]);
 
   useEffect(() => {
     unmountedRef.current = false;
+    if (sessionId) {
+      const clearMessages = useAppStore.getState().clearMessages;
+      clearMessages(sessionId);
+    }
     connect();
     return () => {
       unmountedRef.current = true;
       if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
+      if (backfillTimer.current) clearTimeout(backfillTimer.current);
+      if (isBackfilling.current) flushBackfill();
       wsRef.current?.close();
     };
   }, [connect]);

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -11,10 +11,17 @@ interface InputBarProps {
   onCommand?: (command: SlashCommand) => void;
   disabled?: boolean;
   placeholder?: string;
+  initialText?: string | null;
 }
 
-export function InputBar({ onSend, onCommand, disabled, placeholder }: InputBarProps) {
+export function InputBar({ onSend, onCommand, disabled, placeholder, initialText }: InputBarProps) {
   const [text, setText] = useState('');
+
+  useEffect(() => {
+    if (initialText) {
+      setText(initialText);
+    }
+  }, [initialText]);
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
 

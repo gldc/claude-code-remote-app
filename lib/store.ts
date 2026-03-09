@@ -29,6 +29,9 @@ interface AppState {
   appendMessage: (sessionId: string, message: WSMessageData) => void;
   setMessages: (sessionId: string, messages: WSMessageData[]) => void;
   clearMessages: (sessionId: string) => void;
+
+  pendingSkillInsert: string | null;
+  setPendingSkillInsert: (skill: string | null) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -68,6 +71,9 @@ export const useAppStore = create<AppState>()(
           const { [sessionId]: _, ...rest } = state.sessionMessages;
           return { sessionMessages: rest };
         }),
+
+      pendingSkillInsert: null,
+      setPendingSkillInsert: (skill) => set({ pendingSkillInsert: skill }),
     }),
     {
       name: 'claude-code-remote-storage',

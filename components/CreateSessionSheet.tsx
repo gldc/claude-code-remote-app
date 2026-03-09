@@ -1,11 +1,11 @@
-import { useState, useRef, useMemo, useCallback } from 'react';
+import { useState, useRef, useMemo, useCallback, forwardRef, useImperativeHandle } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
   Alert, Keyboard, ActivityIndicator, Switch, StyleSheet,
 } from 'react-native';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import Animated, {
   useSharedValue, useAnimatedStyle, interpolate,
 } from 'react-native-reanimated';
@@ -16,8 +16,11 @@ interface Props {
   projectDir?: string;
 }
 
-export function CreateSessionSheet({ projectDir: fixedProjectDir }: Props) {
+export const CreateSessionSheet = forwardRef<BottomSheet, Props>(
+  function CreateSessionSheet({ projectDir: fixedProjectDir }, ref) {
   const bottomSheetRef = useRef<BottomSheet>(null);
+
+  useImperativeHandle(ref, () => bottomSheetRef.current!, []);
   const snapPoints = useMemo(() => ['8%', '80%'], []);
   const animatedIndex = useSharedValue(0);
   const colors = useColors();
@@ -96,7 +99,7 @@ export function CreateSessionSheet({ projectDir: fixedProjectDir }: Props) {
       handleIndicatorStyle={styles.sheetIndicator}
       animatedIndex={animatedIndex}
     >
-      <BottomSheetView style={styles.sheetContent}>
+      <BottomSheetScrollView style={styles.sheetContent} keyboardShouldPersistTaps="handled">
         <Animated.Text style={[styles.sheetTitle, titleStyle]}>
           New Session
         </Animated.Text>
@@ -208,10 +211,13 @@ export function CreateSessionSheet({ projectDir: fixedProjectDir }: Props) {
             <Text style={styles.createButtonText}>Create Session</Text>
           )}
         </TouchableOpacity>
-      </BottomSheetView>
+
+        <View style={{ height: Spacing.xxl }} />
+      </BottomSheetScrollView>
     </BottomSheet>
   );
-}
+  },
+);
 
 const makeStyles = (c: ColorPalette) =>
   StyleSheet.create({
