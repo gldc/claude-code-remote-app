@@ -7,13 +7,16 @@ interface FileListProps {
   onSelect?: (path: string) => void;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  M: '#BF8700',
-  A: '#2D8A4E',
-  D: '#CF222E',
-  R: '#0969DA',
-  '?': '#6E7781',
-};
+function getStatusColor(status: string, c: ColorPalette): string {
+  switch (status) {
+    case 'M': return c.warning;
+    case 'A': return c.success;
+    case 'D': return c.error;
+    case 'R': return c.gitRenamed;
+    case '?': return c.gitUntracked;
+    default: return c.textMuted;
+  }
+}
 
 function getDisplayPath(fullPath: string): string {
   const parts = fullPath.split('/');
@@ -29,7 +32,7 @@ const FileRow = React.memo(function FileRow({
   colors: ColorPalette;
   styles: ReturnType<typeof makeStyles>;
 }) {
-  const statusColor = STATUS_COLORS[file.status] || colors.textMuted;
+  const statusColor = getStatusColor(file.status, colors);
   const Wrapper = onSelect ? TouchableOpacity : View;
 
   return (
