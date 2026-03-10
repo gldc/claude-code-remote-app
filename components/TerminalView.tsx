@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
+import { AnsiColorsLight, AnsiColorsDark, type AnsiPalette } from "../constants/ansiColors";
 
 interface Props {
   wsUrl: string;
@@ -12,51 +13,20 @@ interface Props {
   dom: import("expo/dom").DOMProps;
 }
 
+function buildXtermTheme(ansi: AnsiPalette, bg: string, fg: string, cursor: string) {
+  return {
+    background: bg, foreground: fg, cursor,
+    black: ansi.black, red: ansi.red, green: ansi.green, yellow: ansi.yellow,
+    blue: ansi.blue, magenta: ansi.magenta, cyan: ansi.cyan, white: ansi.white,
+    brightBlack: ansi.brightBlack, brightRed: ansi.brightRed, brightGreen: ansi.brightGreen,
+    brightYellow: ansi.brightYellow, brightBlue: ansi.brightBlue, brightMagenta: ansi.brightMagenta,
+    brightCyan: ansi.brightCyan, brightWhite: ansi.brightWhite,
+  };
+}
+
 const THEMES = {
-  light: {
-    background: "#2D2A26",
-    foreground: "#E8DDD0",
-    cursor: "#E8DDD0",
-    selectionBackground: "#4A4540",
-    black: "#2D2A26",
-    red: "#CF222E",
-    green: "#2D8A4E",
-    yellow: "#BF8700",
-    blue: "#74c0fc",
-    magenta: "#cc5de8",
-    cyan: "#66d9e8",
-    white: "#E8DDD0",
-    brightBlack: "#7C7268",
-    brightRed: "#ff6b6b",
-    brightGreen: "#51cf66",
-    brightYellow: "#ffd43b",
-    brightBlue: "#91d5ff",
-    brightMagenta: "#da77f2",
-    brightCyan: "#99e9f2",
-    brightWhite: "#ffffff",
-  },
-  dark: {
-    background: "#141210",
-    foreground: "#E8DDD0",
-    cursor: "#E8DDD0",
-    selectionBackground: "#3D3935",
-    black: "#141210",
-    red: "#E5534B",
-    green: "#3DA665",
-    yellow: "#D4A017",
-    blue: "#74c0fc",
-    magenta: "#cc5de8",
-    cyan: "#66d9e8",
-    white: "#E8DDD0",
-    brightBlack: "#7C7268",
-    brightRed: "#ff8787",
-    brightGreen: "#69db7c",
-    brightYellow: "#ffe066",
-    brightBlue: "#91d5ff",
-    brightMagenta: "#da77f2",
-    brightCyan: "#99e9f2",
-    brightWhite: "#ffffff",
-  },
+  light: buildXtermTheme(AnsiColorsLight, "#2D2A26", "#E8DDD0", "#E8DDD0"),
+  dark: buildXtermTheme(AnsiColorsDark, "#141210", "#E8DDD0", "#E8DDD0"),
 };
 
 const RECONNECT_DELAYS = [1000, 2000, 4000, 8000, 15000];
