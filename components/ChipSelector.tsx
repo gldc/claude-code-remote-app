@@ -49,7 +49,7 @@ const makeStyles = (c: ColorPalette) => StyleSheet.create({
     borderRadius: BorderRadius.xl, borderWidth: 1, borderColor: c.cardBorder,
     backgroundColor: c.card,
   },
-  chipSelected: { borderColor: c.primary, backgroundColor: c.primary + '15' },
+  chipSelected: { borderColor: c.primary, backgroundColor: c.primaryBg15 },
   chipText: { fontSize: FontSize.sm, color: c.textSecondary },
   chipTextSelected: { color: c.primary, fontWeight: '600' },
 });

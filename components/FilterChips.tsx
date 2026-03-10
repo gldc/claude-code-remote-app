@@ -53,7 +53,7 @@ const makeStyles = (c: ColorPalette) =>
     },
     chipActive: {
       borderColor: c.primary,
-      backgroundColor: c.primary + '20',
+      backgroundColor: c.primaryBg20,
     },
     chipText: {
       fontSize: FontSize.sm,
