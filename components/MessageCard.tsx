@@ -7,6 +7,7 @@ import { BashOutputCard } from './BashOutputCard';
 import { ApprovalCard } from './ApprovalCard';
 import { ErrorCard } from './ErrorCard';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
+import { shadowCard } from '../constants/shadows';
 
 interface Props {
   message: WSMessageData;
@@ -137,7 +138,7 @@ const makeStyles = (c: ColorPalette) =>
     },
     avatarText: {
       color: c.buttonText,
-      fontSize: 13,
+      fontSize: FontSize.sm,
       fontWeight: '700',
     },
     assistantBubble: {
@@ -147,10 +148,7 @@ const makeStyles = (c: ColorPalette) =>
       borderTopLeftRadius: 4,
       paddingVertical: Spacing.sm,
       paddingHorizontal: Spacing.xs,
-      shadowColor: c.shadowColor,
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.04,
-      shadowRadius: 3,
+      ...shadowCard,
     },
     statusRow: {
       flexDirection: 'row',

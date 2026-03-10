@@ -186,7 +186,7 @@ const makeStyles = (c: ColorPalette) =>
       paddingVertical: Spacing.md,
     },
     modeButtonActive: {
-      backgroundColor: c.primary + '15',
+      backgroundColor: c.primaryBg15,
       borderBottomWidth: 2,
       borderBottomColor: c.primary,
     },

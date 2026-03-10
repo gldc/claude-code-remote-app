@@ -220,7 +220,7 @@ const makeStyles = (c: ColorPalette) =>
     },
     projectChipActive: {
       borderColor: c.primary,
-      backgroundColor: c.primary + '20',
+      backgroundColor: c.primaryBg20,
     },
     projectChipText: { fontSize: FontSize.sm, color: c.textMuted },
     projectChipTextActive: { color: c.primary },

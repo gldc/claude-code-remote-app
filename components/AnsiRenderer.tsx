@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text, View, StyleSheet, useColorScheme } from 'react-native';
 import { useColors, useThemedStyles, type ColorPalette, Spacing, FontFamily } from '../constants/theme';
+import { FontSize_code } from '../constants/typography';
 import { AnsiColorsLight, AnsiColorsDark, ansiToArray, ansiBrightToArray } from '../constants/ansiColors';
 
 interface AnsiRendererProps {
@@ -92,5 +93,5 @@ export const AnsiRenderer = React.memo(function AnsiRenderer({ text }: AnsiRende
 
 const makeStyles = (c: ColorPalette) => StyleSheet.create({
   container: { backgroundColor: c.codeBg, borderRadius: 8, padding: Spacing.sm },
-  baseText: { fontFamily: FontFamily.mono, fontSize: 12, color: c.codeText },
+  baseText: { fontFamily: FontFamily.mono, fontSize: FontSize_code, color: c.codeText },
 });

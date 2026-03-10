@@ -174,7 +174,7 @@ const makeStyles = (c: ColorPalette) =>
       width: 34,
       height: 34,
       borderRadius: 8,
-      backgroundColor: c.primary + '18',
+      backgroundColor: c.primaryBg20,
       alignItems: 'center',
       justifyContent: 'center',
     },

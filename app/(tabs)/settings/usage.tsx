@@ -79,7 +79,7 @@ const makeStyles = (c: ColorPalette) =>
     container: { flex: 1, backgroundColor: c.background, padding: Spacing.lg },
     planBadge: {
       alignSelf: 'flex-start',
-      backgroundColor: c.primary + '20',
+      backgroundColor: c.primaryBg20,
       paddingHorizontal: Spacing.md,
       paddingVertical: Spacing.xs,
       borderRadius: BorderRadius.xl,
@@ -102,7 +102,7 @@ const makeStyles = (c: ColorPalette) =>
       marginBottom: Spacing.xs,
     },
     infoBanner: {
-      backgroundColor: c.primary + '10',
+      backgroundColor: c.primaryBg10,
       borderRadius: BorderRadius.lg,
       padding: Spacing.lg,
       borderWidth: 1,

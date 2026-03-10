@@ -6,6 +6,7 @@ import { useTemplatesList } from '../../../../lib/api';
 import { TemplateCard } from '../../../../components/TemplateCard';
 import { ErrorBanner } from '../../../../components/ui/ErrorBanner';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../../../../constants/theme';
+import { shadowElevated } from '../../../../constants/shadows';
 
 export default function TemplateListScreen() {
   const { data: templates, isLoading, isError, error, refetch } = useTemplatesList();
@@ -96,10 +97,6 @@ const makeStyles = (c: ColorPalette) =>
       backgroundColor: c.primary,
       alignItems: 'center',
       justifyContent: 'center',
-      elevation: 4,
-      shadowColor: c.shadowColor,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.3,
-      shadowRadius: 4,
+      ...shadowElevated,
     },
   });
