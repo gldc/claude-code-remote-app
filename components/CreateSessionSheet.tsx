@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useCreateSession, useProjectsList, useTemplatesList } from '../lib/api';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
+import { shadowElevated } from '../constants/shadows';
 
 interface Props {
   projectDir?: string;
@@ -225,10 +226,7 @@ const makeStyles = (c: ColorPalette) =>
       backgroundColor: c.card,
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
-      shadowColor: c.shadowColor,
-      shadowOffset: { width: 0, height: -2 },
-      shadowOpacity: 0.08,
-      shadowRadius: 8,
+      ...shadowElevated,
     },
     sheetIndicator: {
       backgroundColor: c.cardBorder,

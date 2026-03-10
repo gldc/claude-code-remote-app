@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { StatusBadge } from './StatusBadge';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
+import { shadowCard } from '../constants/shadows';
 import type { SessionSummary } from '../lib/types';
 
 interface Props {
@@ -136,10 +137,7 @@ const makeStyles = (c: ColorPalette) =>
       marginBottom: Spacing.sm,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: c.cardBorder,
-      shadowColor: c.shadowColor,
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.04,
-      shadowRadius: 3,
+      ...shadowCard,
     },
     cardArchived: {
       opacity: 0.6,
