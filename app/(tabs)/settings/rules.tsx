@@ -8,7 +8,7 @@ import { useColors, useThemedStyles, type ColorPalette, Spacing, FontSize, Borde
 export default function RulesScreen() {
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
-  const { data: rules, refetch } = useApprovalRules();
+  const { data: rules, isLoading, refetch } = useApprovalRules();
   const createRule = useCreateApprovalRule();
   const deleteRule = useDeleteApprovalRule();
 
@@ -83,6 +83,8 @@ export default function RulesScreen() {
         data={rules ?? []}
         renderItem={renderRule}
         keyExtractor={(item) => item.id}
+        onRefresh={refetch}
+        refreshing={isLoading}
         contentContainerStyle={styles.list}
         ListEmptyComponent={<Text style={styles.emptyText}>No rules configured</Text>}
       />
