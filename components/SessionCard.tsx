@@ -205,7 +205,7 @@ const makeStyles = (c: ColorPalette) =>
     actionContent: {
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 2,
+      gap: Spacing.xs,
     },
     actionText: {
       color: c.buttonText,

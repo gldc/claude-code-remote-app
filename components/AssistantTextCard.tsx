@@ -1,7 +1,7 @@
 import React, { type ReactNode, useMemo } from 'react';
 import { View, ScrollView, StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
 import Markdown, { Renderer } from 'react-native-marked';
-import { useColors, type ColorPalette, Spacing, FontSize } from '../constants/theme';
+import { useColors, type ColorPalette, Spacing, FontSize, BorderRadius } from '../constants/theme';
 
 function createRenderer(colors: ColorPalette) {
   return class ChatRenderer extends Renderer {
@@ -69,14 +69,14 @@ export function AssistantTextCard({ text }: { text: string }) {
           h1: {
             fontSize: 19,
             fontWeight: '700',
-            marginTop: 12,
-            marginBottom: 4,
+            marginTop: Spacing.md,
+            marginBottom: Spacing.xs,
           },
           h2: {
             fontSize: 17,
             fontWeight: '700',
-            marginTop: 10,
-            marginBottom: 4,
+            marginTop: Spacing.md,
+            marginBottom: Spacing.xs,
           },
           h3: {
             fontSize: FontSize.md,
@@ -87,19 +87,19 @@ export function AssistantTextCard({ text }: { text: string }) {
           h4: {
             fontSize: FontSize.md,
             fontWeight: '600',
-            marginTop: 6,
+            marginTop: Spacing.sm,
             marginBottom: 2,
           },
           h5: {
             fontSize: FontSize.md,
             fontWeight: '600',
-            marginTop: 6,
+            marginTop: Spacing.sm,
             marginBottom: 2,
           },
           h6: {
             fontSize: FontSize.md,
             fontWeight: '600',
-            marginTop: 6,
+            marginTop: Spacing.sm,
             marginBottom: 2,
           },
           paragraph: {
@@ -121,7 +121,7 @@ export function AssistantTextCard({ text }: { text: string }) {
           blockquote: {
             borderLeftWidth: 2,
             borderLeftColor: colors.cardBorder,
-            paddingLeft: 10,
+            paddingLeft: Spacing.md,
             marginVertical: 4,
           },
           table: {
@@ -146,7 +146,7 @@ export function AssistantTextCard({ text }: { text: string }) {
           },
           code: {
             backgroundColor: colors.codeBg,
-            borderRadius: 8,
+            borderRadius: BorderRadius.sm,
             padding: Spacing.md,
           },
         }}
