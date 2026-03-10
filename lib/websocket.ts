@@ -101,6 +101,7 @@ export function useSessionStream(sessionId: string | null) {
           appendMessage(sessionId, {
             type: 'error',
             data: { message: 'Access denied: unauthorized WebSocket connection (4003).' },
+            timestamp: new Date().toISOString(),
           } as WSMessageData);
         }
         return;

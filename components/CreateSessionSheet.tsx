@@ -207,7 +207,7 @@ export const CreateSessionSheet = forwardRef<BottomSheet, Props>(
           activeOpacity={0.8}
         >
           {createSession.isPending ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color={colors.buttonText} />
           ) : (
             <Text style={styles.createButtonText}>Create Session</Text>
           )}
@@ -303,5 +303,5 @@ const makeStyles = (c: ColorPalette) =>
       alignItems: 'center',
       marginTop: Spacing.lg,
     },
-    createButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: '#FFFFFF' },
+    createButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: c.buttonText },
   });
