@@ -37,7 +37,7 @@ export const queryClient = new QueryClient({
   },
 });
 
-function useBaseUrl() {
+export function useBaseUrl() {
   const { address, port } = useAppStore((s) => s.hostConfig);
   if (!address) return '';
   return `http://${address}:${port}`;
