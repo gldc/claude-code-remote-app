@@ -39,9 +39,14 @@ export default function TerminalScreen() {
     const parent = navigation.getParent();
     parent?.setOptions({ tabBarStyle: { display: "none" } });
     return () => {
-      parent?.setOptions({ tabBarStyle: undefined });
+      parent?.setOptions({
+        tabBarStyle: {
+          backgroundColor: colors.tabBar,
+          borderTopColor: colors.tabBarBorder,
+        },
+      });
     };
-  }, [navigation]);
+  }, [navigation, colors.tabBar, colors.tabBarBorder]);
 
   useEffect(() => {
     const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
