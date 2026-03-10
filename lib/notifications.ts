@@ -64,7 +64,7 @@ async function handleNotificationAction(
         : undefined,
     });
   } catch (err) {
-    console.error(`Notification action '${actionIdentifier}' failed:`, err);
+    // Silently fail — notification actions are best-effort
   }
 }
 
@@ -89,7 +89,6 @@ export async function getExpoPushToken(): Promise<string | null> {
     return data;
   } catch {
     // Push tokens unavailable in Expo Go — requires a development build
-    console.warn('Push notifications unavailable (requires development build)');
     return null;
   }
 }
@@ -104,7 +103,7 @@ export function useNotificationSetup() {
     getExpoPushToken().then((token) => {
       if (token) {
         registerToken.mutate(token, {
-          onError: (err) => console.error('Push token registration failed:', err),
+          onError: () => {},  // Registration failure is non-fatal
         });
       }
     });
@@ -129,7 +128,7 @@ export function useNotificationSetup() {
             router.push(`/(tabs)/sessions/${sessionId}`);
           }
         } catch (err) {
-          console.error('Notification response handling failed:', err);
+          // Silently fail — user will see the notification and can tap again
         }
       }
     );

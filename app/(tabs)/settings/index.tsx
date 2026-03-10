@@ -1,4 +1,5 @@
-import { View, Text, TextInput, TouchableOpacity, Switch, ScrollView, StyleSheet } from 'react-native';
+import { useCallback } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Switch, ScrollView, StyleSheet, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppStore } from '../../../lib/store';
@@ -14,6 +15,29 @@ export default function SettingsScreen() {
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
 
+  const validateAddress = useCallback((address: string) => {
+    const trimmed = address.trim();
+    if (!trimmed) return;
+
+    const isTailscale =
+      trimmed.startsWith('100.') ||
+      trimmed.includes('.ts.net') ||
+      trimmed.includes('tailnet') ||
+      trimmed === 'localhost' ||
+      trimmed === '127.0.0.1';
+
+    if (!isTailscale) {
+      Alert.alert(
+        'Non-Tailscale Address',
+        'This address doesn\'t appear to be a Tailscale IP or hostname. Traffic will be unencrypted. Continue?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Use Anyway' },
+        ],
+      );
+    }
+  }, [hostConfig, setHostConfig]);
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.sectionTitle}>Host Connection</Text>
@@ -23,11 +47,15 @@ export default function SettingsScreen() {
           style={styles.input}
           value={hostConfig.address}
           onChangeText={(v) => setHostConfig({ ...hostConfig, address: v })}
+          onBlur={() => validateAddress(hostConfig.address)}
           placeholder="e.g., macbook.tailnet-xxxx or 100.x.y.z"
           placeholderTextColor={colors.textMuted}
           autoCapitalize="none"
           autoCorrect={false}
         />
+        <Text style={styles.helperText}>
+          Use your Tailscale IP (100.x.x.x) or MagicDNS name
+        </Text>
         <Text style={styles.label}>Port</Text>
         <TextInput
           style={styles.input}
@@ -206,4 +234,9 @@ const makeStyles = (c: ColorPalette) =>
       paddingVertical: Spacing.sm,
     },
     switchLabel: { fontSize: FontSize.md, color: c.text },
+    helperText: {
+      fontSize: FontSize.xs,
+      color: c.textMuted,
+      marginTop: Spacing.xs,
+    },
   });

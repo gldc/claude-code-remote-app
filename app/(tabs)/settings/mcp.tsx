@@ -129,9 +129,9 @@ export default function MCPServersScreen() {
               {Object.keys(server.env).length > 0 && (
                 <>
                   <Text style={styles.detailLabel}>Environment</Text>
-                  {Object.entries(server.env).map(([key, val]) => (
+                  {Object.entries(server.env).map(([key]) => (
                     <Text key={key} style={styles.envRow}>
-                      {key}={val}
+                      {key}=••••••••
                     </Text>
                   ))}
                 </>

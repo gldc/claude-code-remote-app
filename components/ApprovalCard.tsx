@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useApproveToolUse, useDenyToolUse, useCreateApprovalRule } from '../lib/api';
@@ -31,9 +31,22 @@ export function ApprovalCard({ sessionId, toolName, toolInput, description, reso
   };
 
   const handleAlwaysApprove = () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    createRule.mutate({ tool_pattern: toolName, action: 'approve' });
-    approve.mutate(undefined, { onSuccess: () => setDecision('approved') });
+    Alert.alert(
+      'Always Approve?',
+      `This will automatically approve ALL future "${toolName}" requests without asking. You can remove this rule in Settings > Rules.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Always Approve',
+          style: 'destructive',
+          onPress: () => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            createRule.mutate({ tool_pattern: toolName, action: 'approve' });
+            approve.mutate(undefined, { onSuccess: () => setDecision('approved') });
+          },
+        },
+      ],
+    );
   };
 
   const handleDeny = () => {
