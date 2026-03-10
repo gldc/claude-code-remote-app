@@ -55,7 +55,7 @@ export const LightColors: ColorPalette = {
   tabBar: '#FDFAF6',
   tabBarBorder: '#E5DDD3',
   tabBarActive: '#C4613C',
-  tabBarInactive: '#9C9389',
+  tabBarInactive: '#6E6560',
   toolBg: '#EDE8E0',
   toolIconBg: '#E0D8CE',
   codeBg: '#2D2A26',
