@@ -36,7 +36,7 @@ export default function SettingsScreen() {
         ],
       );
     }
-  }, [hostConfig, setHostConfig]);
+  }, []);
 
   return (
     <ScrollView style={styles.container}>
