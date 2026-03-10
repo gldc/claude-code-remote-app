@@ -3,6 +3,7 @@ import { Text, StyleSheet } from 'react-native';
 import { ExpandableCard } from './ExpandableCard';
 import { AnsiRenderer } from './AnsiRenderer';
 import { useColors, useThemedStyles, type ColorPalette, FontFamily, FontSize, Spacing } from '../constants/theme';
+import { FontSize_code } from '../constants/typography';
 
 interface BashOutputCardProps {
   output: string;
@@ -34,7 +35,7 @@ const makeStyles = (c: ColorPalette) =>
   StyleSheet.create({
     preview: {
       fontFamily: FontFamily.mono,
-      fontSize: FontSize.xs - 1,
+      fontSize: FontSize_code,
       color: c.textMuted,
       paddingHorizontal: Spacing.md,
       paddingBottom: Spacing.sm,

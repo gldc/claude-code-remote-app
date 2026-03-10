@@ -4,6 +4,7 @@ import { ExpandableCard } from './ExpandableCard';
 import { DiffViewer } from './DiffViewer';
 import { SyntaxHighlightedText } from './SyntaxHighlightedText';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, FontFamily } from '../constants/theme';
+import { FontSize_code } from '../constants/typography';
 
 interface Props {
   output: string;
@@ -82,7 +83,7 @@ const makeStyles = (c: ColorPalette) =>
   StyleSheet.create({
     preview: {
       fontFamily: FontFamily.mono,
-      fontSize: FontSize.xs - 1,
+      fontSize: FontSize_code,
       color: c.textMuted,
       paddingHorizontal: Spacing.md,
       paddingBottom: Spacing.sm,
@@ -92,13 +93,13 @@ const makeStyles = (c: ColorPalette) =>
     },
     errorText: {
       fontFamily: FontFamily.mono,
-      fontSize: FontSize.xs - 1,
+      fontSize: FontSize_code,
       color: c.error,
       padding: Spacing.sm,
     },
     plainText: {
       fontFamily: FontFamily.mono,
-      fontSize: FontSize.xs - 1,
+      fontSize: FontSize_code,
       color: c.textSecondary,
       padding: Spacing.sm,
     },

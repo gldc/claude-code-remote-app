@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius, FontFamily } from '../constants/theme';
+import { FontSize_code } from '../constants/typography';
 
 interface Props {
   toolName: string;
@@ -95,7 +96,7 @@ const makeStyles = (c: ColorPalette) =>
     },
     code: {
       fontFamily: FontFamily.mono,
-      fontSize: FontSize.xs - 1,
+      fontSize: FontSize_code,
       color: c.textSecondary,
       backgroundColor: c.toolIconBg,
       borderRadius: BorderRadius.sm,

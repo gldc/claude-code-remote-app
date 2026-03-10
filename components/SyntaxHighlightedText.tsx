@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, Text, View, StyleSheet } from 'react-native';
 import { useColors, useThemedStyles, type ColorPalette, Spacing, FontFamily } from '../constants/theme';
+import { FontSize_code } from '../constants/typography';
 
 interface SyntaxHighlightedTextProps {
   code: string;
@@ -124,6 +125,6 @@ const makeStyles = (c: ColorPalette) => StyleSheet.create({
   container: { backgroundColor: c.codeBg, borderRadius: 8, maxHeight: 300 },
   codeBlock: { padding: Spacing.sm },
   line: { flexDirection: 'row', minHeight: 18 },
-  lineNum: { color: c.textMuted, fontFamily: FontFamily.mono, fontSize: 12, textAlign: 'right', marginRight: 8, opacity: 0.5 },
-  lineText: { fontFamily: FontFamily.mono, fontSize: 12, flexShrink: 1 },
+  lineNum: { color: c.textMuted, fontFamily: FontFamily.mono, fontSize: FontSize_code, textAlign: 'right', marginRight: 8, opacity: 0.5 },
+  lineText: { fontFamily: FontFamily.mono, fontSize: FontSize_code, flexShrink: 1 },
 });
