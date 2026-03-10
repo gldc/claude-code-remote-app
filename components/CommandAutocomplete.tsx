@@ -84,6 +84,6 @@ const makeStyles = (c: ColorPalette) =>
     description: {
       fontSize: FontSize.xs,
       color: c.textMuted,
-      marginTop: 2,
+      marginTop: Spacing.xs,
     },
   });

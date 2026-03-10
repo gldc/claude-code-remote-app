@@ -35,9 +35,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.sm + 2,
-    paddingVertical: 3,
+    paddingVertical: Spacing.xs,
     borderRadius: BorderRadius.xl,
-    gap: 5,
+    gap: Spacing.xs,
   },
   dot: {
     width: 6,

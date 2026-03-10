@@ -68,7 +68,7 @@ const makeStyles = (c: ColorPalette) =>
       alignItems: 'center',
       paddingVertical: Spacing.sm,
       paddingHorizontal: Spacing.md,
-      gap: 6,
+      gap: Spacing.sm,
     },
     iconWrap: {
       width: 20,
@@ -98,7 +98,7 @@ const makeStyles = (c: ColorPalette) =>
       fontSize: FontSize.xs - 1,
       color: c.textSecondary,
       backgroundColor: c.toolIconBg,
-      borderRadius: 6,
+      borderRadius: BorderRadius.sm,
       padding: Spacing.sm,
       overflow: 'hidden',
     },

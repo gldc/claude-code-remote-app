@@ -101,14 +101,14 @@ const makeStyles = (c: ColorPalette) =>
       flexDirection: 'row',
       justifyContent: 'flex-end',
       paddingHorizontal: Spacing.lg,
-      paddingVertical: 3,
+      paddingVertical: Spacing.xs,
     },
     userBubble: {
       backgroundColor: c.primary,
       borderRadius: 18,
       borderBottomRightRadius: 4,
       paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.sm + 2,
+      paddingVertical: Spacing.md,
       maxWidth: '78%',
     },
     userText: {
@@ -120,12 +120,12 @@ const makeStyles = (c: ColorPalette) =>
       flexDirection: 'row',
       alignItems: 'flex-start',
       paddingRight: Spacing.xl,
-      paddingVertical: 2,
+      paddingVertical: Spacing.xs,
     },
     avatarCol: {
       width: 40,
       alignItems: 'center',
-      paddingTop: 2,
+      paddingTop: Spacing.xs,
     },
     avatar: {
       width: 26,
