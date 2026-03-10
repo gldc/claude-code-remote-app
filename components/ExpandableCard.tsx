@@ -47,7 +47,7 @@ export const ExpandableCard = React.memo(function ExpandableCard({
 });
 
 const makeStyles = (c: ColorPalette) => StyleSheet.create({
-  card: { backgroundColor: c.card, borderRadius: BorderRadius.md, borderWidth: StyleSheet.hairlineWidth, borderColor: c.cardBorder, overflow: 'hidden' },
+  card: { backgroundColor: c.toolBg, borderRadius: BorderRadius.md, borderWidth: StyleSheet.hairlineWidth, borderColor: c.cardBorder, overflow: 'hidden' },
   header: { flexDirection: 'row', alignItems: 'center', padding: Spacing.md, gap: Spacing.sm },
   title: { flex: 1, fontSize: FontSize.md, fontWeight: '600', color: c.text },
   badge: { fontSize: FontSize.xs, color: c.textMuted, backgroundColor: c.cardBorder, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 },
