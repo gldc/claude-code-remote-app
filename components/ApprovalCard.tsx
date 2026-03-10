@@ -156,7 +156,7 @@ const makeStyles = (c: ColorPalette) =>
       marginBottom: Spacing.sm,
     },
     inputPreview: {
-      backgroundColor: c.background,
+      backgroundColor: c.codeBg,
       borderRadius: BorderRadius.sm,
       padding: Spacing.md,
       marginBottom: Spacing.lg,
@@ -164,7 +164,7 @@ const makeStyles = (c: ColorPalette) =>
     code: {
       fontFamily: FontFamily.mono,
       fontSize: FontSize.xs,
-      color: c.textSecondary,
+      color: c.codeText,
     },
     buttons: {
       flexDirection: 'row',
@@ -198,7 +198,7 @@ const makeStyles = (c: ColorPalette) =>
       marginVertical: 3,
       paddingHorizontal: Spacing.md,
       paddingVertical: Spacing.sm,
-      backgroundColor: c.card,
+      backgroundColor: c.toolBg,
       borderRadius: BorderRadius.md,
       borderWidth: 1,
     },

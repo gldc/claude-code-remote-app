@@ -66,7 +66,7 @@ export default function ProjectDetailScreen() {
                     params: { id },
                   })
                 }
-                style={{ marginRight: Spacing.sm }}
+                style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center', marginRight: Spacing.xs }}
                 activeOpacity={0.7}
               >
                 <Ionicons name="terminal-outline" size={22} color={colors.text} />
