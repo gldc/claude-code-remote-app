@@ -153,7 +153,7 @@ export default function TerminalScreen() {
                 styles.toolbarKeyText,
                 { color: colors.text },
                 key.label === "Ctrl" &&
-                  ctrlActive && { color: "#fff" },
+                  ctrlActive && { color: colors.buttonText },
               ]}
             >
               {key.label}

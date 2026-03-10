@@ -110,7 +110,7 @@ export default function WorkflowListScreen() {
       )}
 
       <TouchableOpacity style={styles.fab} activeOpacity={0.8} onPress={handleCreate}>
-        <Ionicons name="add" size={28} color="#fff" />
+        <Ionicons name="add" size={28} color={colors.buttonText} />
       </TouchableOpacity>
     </View>
   );

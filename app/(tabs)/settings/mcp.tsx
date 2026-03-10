@@ -198,7 +198,7 @@ export default function MCPServersScreen() {
           onPress={handleAdd}
           disabled={createServer.isPending}
         >
-          <Ionicons name="add-circle-outline" size={20} color="#FFFFFF" />
+          <Ionicons name="add-circle-outline" size={20} color={colors.buttonText} />
           <Text style={styles.addButtonText}>
             {createServer.isPending ? 'Adding...' : 'Add Server'}
           </Text>
@@ -299,7 +299,7 @@ const makeStyles = (c: ColorPalette) =>
       borderColor: c.primary,
     },
     typeOptionText: { fontSize: FontSize.sm, fontWeight: '600', color: c.textMuted },
-    typeOptionTextActive: { color: '#FFFFFF' },
+    typeOptionTextActive: { color: c.buttonText },
     addButton: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -311,5 +311,5 @@ const makeStyles = (c: ColorPalette) =>
       marginTop: Spacing.lg,
     },
     addButtonDisabled: { opacity: 0.6 },
-    addButtonText: { fontSize: FontSize.md, fontWeight: '600', color: '#FFFFFF' },
+    addButtonText: { fontSize: FontSize.md, fontWeight: '600', color: c.buttonText },
   });

@@ -57,7 +57,7 @@ export default function TemplateListScreen() {
         onPress={() => router.push('/(tabs)/settings/templates/new')}
         activeOpacity={0.8}
       >
-        <Ionicons name="add" size={28} color="#FFFFFF" />
+        <Ionicons name="add" size={28} color={colors.buttonText} />
       </TouchableOpacity>
     </View>
   );

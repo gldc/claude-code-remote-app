@@ -215,7 +215,7 @@ const makeStyles = (c: ColorPalette) =>
       justifyContent: 'center',
     },
     thinkingAvatarText: {
-      color: '#FFFFFF',
+      color: c.buttonText,
       fontSize: 13,
       fontWeight: '700',
     },

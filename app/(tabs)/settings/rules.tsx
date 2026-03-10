@@ -73,7 +73,7 @@ export default function RulesScreen() {
           />
         </View>
         <TouchableOpacity style={styles.addButton} onPress={handleCreate} disabled={!toolPattern.trim()}>
-          <Ionicons name="add-circle" size={20} color="#FFF" />
+          <Ionicons name="add-circle" size={20} color={colors.buttonText} />
           <Text style={styles.addButtonText}>Add Rule</Text>
         </TouchableOpacity>
       </View>
@@ -112,7 +112,7 @@ const makeStyles = (c: ColorPalette) =>
       flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm,
       backgroundColor: c.primary, borderRadius: BorderRadius.md, padding: Spacing.md,
     },
-    addButtonText: { color: '#FFF', fontSize: FontSize.md, fontWeight: '600' },
+    addButtonText: { color: c.buttonText, fontSize: FontSize.md, fontWeight: '600' },
     list: { gap: Spacing.sm },
     ruleRow: {
       flexDirection: 'row', alignItems: 'center', gap: Spacing.md,

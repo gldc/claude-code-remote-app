@@ -152,7 +152,7 @@ export default function CreateProjectScreen() {
         activeOpacity={0.8}
       >
         {isPending ? (
-          <ActivityIndicator color="#FFFFFF" />
+          <ActivityIndicator color={colors.buttonText} />
         ) : (
           <Text style={styles.createButtonText}>
             {mode === 'blank' ? 'Create Project' : 'Clone Repository'}
@@ -236,5 +236,5 @@ const makeStyles = (c: ColorPalette) =>
       alignItems: 'center',
       marginTop: Spacing.xl,
     },
-    createButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: '#FFFFFF' },
+    createButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: c.buttonText },
   });
