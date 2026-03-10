@@ -72,7 +72,7 @@ export function InputBar({ onSend, onCommand, disabled, placeholder, initialText
           <Ionicons
             name="arrow-up"
             size={18}
-            color={canSend ? '#FFFFFF' : colors.textMuted}
+            color={canSend ? colors.buttonText : colors.textMuted}
           />
         </TouchableOpacity>
       </View>

@@ -112,7 +112,7 @@ const makeStyles = (c: ColorPalette) =>
       maxWidth: '78%',
     },
     userText: {
-      color: '#FFFFFF',
+      color: c.buttonText,
       fontSize: FontSize.md,
       lineHeight: 21,
     },
@@ -136,7 +136,7 @@ const makeStyles = (c: ColorPalette) =>
       justifyContent: 'center',
     },
     avatarText: {
-      color: '#FFFFFF',
+      color: c.buttonText,
       fontSize: 13,
       fontWeight: '700',
     },

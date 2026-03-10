@@ -53,7 +53,7 @@ export function SessionCard({ session, onDelete, onArchive }: Props) {
     return (
       <RectButton style={styles.deleteAction} onPress={handleDelete}>
         <Animated.View style={[styles.actionContent, { transform: [{ scale }] }]}>
-          <Ionicons name="trash-outline" size={22} color="#FFFFFF" />
+          <Ionicons name="trash-outline" size={22} color={colors.buttonText} />
           <Text style={styles.actionText}>Delete</Text>
         </Animated.View>
       </RectButton>
@@ -75,7 +75,7 @@ export function SessionCard({ session, onDelete, onArchive }: Props) {
           <Ionicons
             name={session.archived ? 'arrow-undo-outline' : 'archive-outline'}
             size={22}
-            color="#FFFFFF"
+            color={colors.buttonText}
           />
           <Text style={styles.actionText}>
             {session.archived ? 'Unarchive' : 'Archive'}
@@ -208,7 +208,7 @@ const makeStyles = (c: ColorPalette) =>
       gap: 2,
     },
     actionText: {
-      color: '#FFFFFF',
+      color: c.buttonText,
       fontSize: FontSize.xs,
       fontWeight: '600',
     },

@@ -106,8 +106,8 @@ export function ApprovalCard({ sessionId, toolName, toolInput, description, reso
           onPress={handleApprove}
           disabled={approve.isPending}
         >
-          <Ionicons name="checkmark" size={18} color="#FFFFFF" />
-          <Text style={[styles.buttonText, { color: '#FFFFFF' }]}>Approve</Text>
+          <Ionicons name="checkmark" size={18} color={colors.buttonText} />
+          <Text style={[styles.buttonText, { color: colors.buttonText }]}>Approve</Text>
         </TouchableOpacity>
       </View>
       <TouchableOpacity

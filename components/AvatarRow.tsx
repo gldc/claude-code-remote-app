@@ -72,7 +72,7 @@ const makeStyles = (c: ColorPalette) => StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
     borderWidth: 2, borderColor: c.background,
   },
-  initials: { fontSize: FontSize.xs, fontWeight: '700', color: '#FFFFFF' },
+  initials: { fontSize: FontSize.xs, fontWeight: '700', color: c.buttonText },
   overflowAvatar: { backgroundColor: c.cardBorder },
   overflowText: { fontSize: FontSize.xs, fontWeight: '600', color: c.textMuted },
   addButton: { backgroundColor: c.card, borderStyle: 'dashed' as const, borderColor: c.primary },
