@@ -1,15 +1,16 @@
 import { useCallback } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Switch, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, Switch, ScrollView, StyleSheet, Alert, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { useAppStore } from '../../../lib/store';
 import { useServerStatus, usePushSettings, useUpdatePushSettings } from '../../../lib/api';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../../../constants/theme';
+import { SectionHeader } from '../../../components/ui/SectionHeader';
+import { ListItem } from '../../../components/ui/ListItem';
 
 export default function SettingsScreen() {
   const hostConfig = useAppStore((s) => s.hostConfig);
   const setHostConfig = useAppStore((s) => s.setHostConfig);
-  const { data: serverStatus } = useServerStatus();
+  const { data: serverStatus, isLoading: isLoadingStatus, refetch: refetchStatus } = useServerStatus();
   const { data: pushSettings } = usePushSettings();
   const updatePush = useUpdatePushSettings();
   const colors = useColors();
@@ -39,8 +40,11 @@ export default function SettingsScreen() {
   }, []);
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.sectionTitle}>Host Connection</Text>
+    <ScrollView
+      style={styles.container}
+      refreshControl={<RefreshControl refreshing={isLoadingStatus} onRefresh={refetchStatus} tintColor={colors.primary} />}
+    >
+      <SectionHeader>Host Connection</SectionHeader>
       <View style={styles.section}>
         <Text style={styles.label}>Tailscale Address</Text>
         <TextInput
@@ -74,57 +78,47 @@ export default function SettingsScreen() {
         )}
       </View>
 
-      <Text style={styles.sectionTitle}>Usage</Text>
+      <SectionHeader>Usage</SectionHeader>
       <View style={{ gap: Spacing.sm }}>
-        <TouchableOpacity
-          style={styles.navRow}
+        <ListItem
+          icon="speedometer"
+          title="Usage Dashboard"
           onPress={() => router.push('/(tabs)/settings/usage')}
-        >
-          <Ionicons name="speedometer" size={20} color={colors.primary} />
-          <Text style={styles.navRowText}>Usage Dashboard</Text>
-          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.navRow}
+          spaced={false}
+        />
+        <ListItem
+          icon="analytics"
+          title="Analytics"
           onPress={() => router.push('/(tabs)/settings/analytics')}
-        >
-          <Ionicons name="analytics" size={20} color={colors.primary} />
-          <Text style={styles.navRowText}>Analytics</Text>
-          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-        </TouchableOpacity>
+          spaced={false}
+        />
       </View>
 
-      <Text style={styles.sectionTitle}>Automation</Text>
-      <TouchableOpacity
-        style={styles.navRow}
+      <SectionHeader>Automation</SectionHeader>
+      <ListItem
+        icon="shield-checkmark"
+        title="Approval Rules"
         onPress={() => router.push('/(tabs)/settings/rules')}
-      >
-        <Ionicons name="shield-checkmark" size={20} color={colors.primary} />
-        <Text style={styles.navRowText}>Approval Rules</Text>
-        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-      </TouchableOpacity>
+        spaced={false}
+      />
 
-      <Text style={styles.sectionTitle}>Templates</Text>
-      <TouchableOpacity
-        style={styles.navRow}
+      <SectionHeader>Templates</SectionHeader>
+      <ListItem
+        icon="document-text"
+        title="Manage Templates"
         onPress={() => router.push('/(tabs)/settings/templates')}
-      >
-        <Ionicons name="document-text" size={20} color={colors.primary} />
-        <Text style={styles.navRowText}>Manage Templates</Text>
-        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-      </TouchableOpacity>
+        spaced={false}
+      />
 
-      <Text style={styles.sectionTitle}>MCP Servers</Text>
-      <TouchableOpacity
-        style={styles.navRow}
+      <SectionHeader>MCP Servers</SectionHeader>
+      <ListItem
+        icon="server"
+        title="Manage MCP Servers"
         onPress={() => router.push('/(tabs)/settings/mcp')}
-      >
-        <Ionicons name="server" size={20} color={colors.primary} />
-        <Text style={styles.navRowText}>Manage MCP Servers</Text>
-        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
-      </TouchableOpacity>
+        spaced={false}
+      />
 
-      <Text style={styles.sectionTitle}>Notifications</Text>
+      <SectionHeader>Notifications</SectionHeader>
       <View style={styles.section}>
         {(() => {
           const settings = pushSettings ?? {
@@ -177,15 +171,6 @@ export default function SettingsScreen() {
 const makeStyles = (c: ColorPalette) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: c.background, padding: Spacing.lg },
-    sectionTitle: {
-      fontSize: FontSize.sm,
-      fontWeight: '600',
-      color: c.textMuted,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-      marginTop: Spacing.xl,
-      marginBottom: Spacing.sm,
-    },
     section: {
       backgroundColor: c.card,
       borderRadius: BorderRadius.lg,
@@ -216,17 +201,6 @@ const makeStyles = (c: ColorPalette) =>
     },
     statusDot: { width: 8, height: 8, borderRadius: 4 },
     statusText: { fontSize: FontSize.sm, color: c.success },
-    navRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: c.card,
-      borderRadius: BorderRadius.lg,
-      padding: Spacing.lg,
-      borderWidth: 1,
-      borderColor: c.cardBorder,
-      gap: Spacing.md,
-    },
-    navRowText: { flex: 1, fontSize: FontSize.md, color: c.text },
     switchRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
