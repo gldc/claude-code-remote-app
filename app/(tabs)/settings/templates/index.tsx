@@ -4,10 +4,11 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTemplatesList } from '../../../../lib/api';
 import { TemplateCard } from '../../../../components/TemplateCard';
+import { ErrorBanner } from '../../../../components/ui/ErrorBanner';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../../../../constants/theme';
 
 export default function TemplateListScreen() {
-  const { data: templates, isLoading, refetch } = useTemplatesList();
+  const { data: templates, isLoading, isError, error, refetch } = useTemplatesList();
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
 
@@ -23,6 +24,7 @@ export default function TemplateListScreen() {
 
   return (
     <View style={styles.container}>
+      {isError && <ErrorBanner message={error?.message ?? 'Failed to load templates'} onRetry={refetch} />}
       {isLoading ? (
         <ActivityIndicator style={{ flex: 1 }} color={colors.primary} />
       ) : !templates?.length ? (

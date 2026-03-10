@@ -4,16 +4,18 @@ import { useProjectsList } from '../../../lib/api';
 import { ProjectCard } from '../../../components/ProjectCard';
 import { EmptyState } from '../../../components/ui/EmptyState';
 import { LoadingState } from '../../../components/ui/LoadingState';
+import { ErrorBanner } from '../../../components/ui/ErrorBanner';
 import { FAB } from '../../../components/ui/FAB';
 import { useColors, useThemedStyles, type ColorPalette, Spacing } from '../../../constants/theme';
 
 export default function ProjectListScreen() {
-  const { data: projects, isLoading, refetch } = useProjectsList();
+  const { data: projects, isLoading, isError, error, refetch } = useProjectsList();
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
 
   return (
     <View style={styles.container}>
+      {isError && <ErrorBanner message={error?.message ?? 'Failed to load projects'} onRetry={refetch} />}
       {isLoading ? (
         <LoadingState />
       ) : !projects?.length ? (
