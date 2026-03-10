@@ -2,6 +2,7 @@ import React, { type ReactNode, useMemo } from 'react';
 import { View, ScrollView, StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
 import Markdown, { Renderer } from 'react-native-marked';
 import { useColors, type ColorPalette, Spacing, FontSize, BorderRadius } from '../constants/theme';
+import { TextVariants, FontSize_code } from '../constants/typography';
 
 function createRenderer(colors: ColorPalette) {
   return class ChatRenderer extends Renderer {
@@ -13,7 +14,7 @@ function createRenderer(colors: ColorPalette) {
     ): ReactNode {
       return super.code(text, language, containerStyle, {
         fontFamily: 'Menlo',
-        fontSize: FontSize.sm - 1,
+        fontSize: FontSize_code,
         color: colors.codeText,
       });
     }
@@ -67,21 +68,18 @@ export function AssistantTextCard({ text }: { text: string }) {
             lineHeight: 21,
           },
           h1: {
-            fontSize: 19,
-            fontWeight: '700',
+            ...TextVariants.h2,
             marginTop: Spacing.md,
             marginBottom: Spacing.xs,
           },
           h2: {
-            fontSize: 17,
-            fontWeight: '700',
+            ...TextVariants.h3,
             marginTop: Spacing.md,
             marginBottom: Spacing.xs,
           },
           h3: {
-            fontSize: FontSize.md,
-            fontWeight: '600',
-            marginTop: 8,
+            ...TextVariants.bodyStrong,
+            marginTop: Spacing.sm,
             marginBottom: 2,
           },
           h4: {
@@ -141,7 +139,7 @@ export function AssistantTextCard({ text }: { text: string }) {
             paddingHorizontal: 5,
             paddingVertical: 1,
             fontFamily: 'Menlo',
-            fontSize: FontSize.sm - 1,
+            fontSize: FontSize_code,
             color: colors.codespanText,
           },
           code: {
