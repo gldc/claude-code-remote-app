@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { useRegisterPushToken } from './api';
 
@@ -28,7 +29,10 @@ export async function getExpoPushToken(): Promise<string | null> {
 
     if (finalStatus !== 'granted') return null;
 
-    const { data } = await Notifications.getExpoPushTokenAsync();
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+    const { data } = await Notifications.getExpoPushTokenAsync({
+      projectId,
+    });
     return data;
   } catch {
     // Push tokens unavailable in Expo Go — requires a development build
