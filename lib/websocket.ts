@@ -88,12 +88,22 @@ export function useSessionStream(sessionId: string | null) {
       }
     };
 
-    ws.onclose = () => {
+    ws.onclose = (event) => {
       setIsConnected(false);
       // Flush any remaining backfill on disconnect
       if (isBackfilling.current) {
         if (backfillTimer.current) clearTimeout(backfillTimer.current);
         flushBackfill();
+      }
+      // 4003 = unauthorized — do not reconnect, surface error to user
+      if (event.code === 4003) {
+        if (sessionId) {
+          appendMessage(sessionId, {
+            type: 'error',
+            data: { message: 'Access denied: unauthorized WebSocket connection (4003).' },
+          } as WSMessageData);
+        }
+        return;
       }
       if (!unmountedRef.current) {
         reconnectTimer.current = setTimeout(connect, 3000);

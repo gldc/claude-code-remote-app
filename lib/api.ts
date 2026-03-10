@@ -32,7 +32,13 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 3000,
-      retry: 2,
+      retry: (failureCount, error) => {
+        // Never retry 403 Forbidden responses
+        if (error instanceof Error && error.message.startsWith('Forbidden:')) {
+          return false;
+        }
+        return failureCount < 2;
+      },
     },
   },
 });
@@ -53,6 +59,9 @@ async function apiFetch<T>(baseUrl: string, path: string, init?: RequestInit): P
   });
   if (!resp.ok) {
     const body = await resp.text();
+    if (resp.status === 403) {
+      throw new Error(`Forbidden: ${body}`);
+    }
     throw new Error(`API error ${resp.status}: ${body}`);
   }
   if (resp.status === 204) return undefined as T;
