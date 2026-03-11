@@ -18,6 +18,7 @@ export function ConnectStep({ onNext, onSkip }: OnboardingStepProps) {
   const [testing, setTesting] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [activeSessions, setActiveSessions] = useState<number | null>(null);
 
   const handleTestConnection = async () => {
     if (!address.trim()) {
@@ -47,6 +48,12 @@ export function ConnectStep({ onNext, onSkip }: OnboardingStepProps) {
 
       if (response.ok) {
         setHostConfig({ address: address.trim(), port: portNum });
+        try {
+          const data = await response.json();
+          setActiveSessions(typeof data.active_sessions === 'number' ? data.active_sessions : null);
+        } catch {
+          setActiveSessions(null);
+        }
         setConnectionStatus('success');
       } else {
         setConnectionStatus('error');
@@ -134,7 +141,11 @@ export function ConnectStep({ onNext, onSkip }: OnboardingStepProps) {
       {connectionStatus === 'success' && (
         <View style={styles.successBanner}>
           <Ionicons name="checkmark-circle" size={IconSize.md} color={colors.success} />
-          <Text style={styles.successText}>Connected successfully!</Text>
+          <Text style={styles.successText}>
+            {activeSessions !== null
+              ? `Connected — ${activeSessions} active session${activeSessions === 1 ? '' : 's'}`
+              : 'Connected successfully!'}
+          </Text>
         </View>
       )}
 
@@ -148,8 +159,9 @@ export function ConnectStep({ onNext, onSkip }: OnboardingStepProps) {
       {/* Next CTA — only active after successful connection */}
       <TouchableOpacity
         style={[styles.ctaButton, connectionStatus !== 'success' && styles.ctaButtonDisabled]}
-        onPress={connectionStatus === 'success' ? onNext : undefined}
-        activeOpacity={connectionStatus === 'success' ? 0.8 : 1}
+        onPress={onNext}
+        disabled={connectionStatus !== 'success'}
+        activeOpacity={0.8}
       >
         <Text style={[styles.ctaText, connectionStatus !== 'success' && styles.ctaTextDisabled]}>
           Next
@@ -280,6 +292,7 @@ const makeStyles = (c: ColorPalette) =>
     },
     ctaButtonDisabled: {
       backgroundColor: c.cardBorder,
+      opacity: 0.6,
     },
     ctaText: {
       fontSize: FontSize.lg,

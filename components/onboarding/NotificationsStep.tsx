@@ -12,8 +12,12 @@ export function NotificationsStep({ onNext, onSkip }: OnboardingStepProps) {
 
   const handleEnable = async () => {
     setRequesting(true);
-    await getExpoPushToken();
-    onNext();
+    try {
+      await getExpoPushToken();
+    } finally {
+      setRequesting(false);
+      onNext();
+    }
   };
 
   return (
