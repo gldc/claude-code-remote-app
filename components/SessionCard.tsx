@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { StatusBadge } from './StatusBadge';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
+import { shadowCard } from '../constants/shadows';
 import type { SessionSummary } from '../lib/types';
 
 interface Props {
@@ -53,7 +54,7 @@ export function SessionCard({ session, onDelete, onArchive }: Props) {
     return (
       <RectButton style={styles.deleteAction} onPress={handleDelete}>
         <Animated.View style={[styles.actionContent, { transform: [{ scale }] }]}>
-          <Ionicons name="trash-outline" size={22} color="#FFFFFF" />
+          <Ionicons name="trash-outline" size={22} color={colors.buttonText} />
           <Text style={styles.actionText}>Delete</Text>
         </Animated.View>
       </RectButton>
@@ -75,7 +76,7 @@ export function SessionCard({ session, onDelete, onArchive }: Props) {
           <Ionicons
             name={session.archived ? 'arrow-undo-outline' : 'archive-outline'}
             size={22}
-            color="#FFFFFF"
+            color={colors.buttonText}
           />
           <Text style={styles.actionText}>
             {session.archived ? 'Unarchive' : 'Archive'}
@@ -136,10 +137,7 @@ const makeStyles = (c: ColorPalette) =>
       marginBottom: Spacing.sm,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: c.cardBorder,
-      shadowColor: c.shadowColor,
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.04,
-      shadowRadius: 3,
+      ...shadowCard,
     },
     cardArchived: {
       opacity: 0.6,
@@ -205,10 +203,10 @@ const makeStyles = (c: ColorPalette) =>
     actionContent: {
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 2,
+      gap: Spacing.xs,
     },
     actionText: {
-      color: '#FFFFFF',
+      color: c.buttonText,
       fontSize: FontSize.xs,
       fontWeight: '600',
     },

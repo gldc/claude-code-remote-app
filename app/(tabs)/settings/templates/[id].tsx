@@ -195,7 +195,7 @@ export default function TemplateEditorScreen() {
         activeOpacity={0.8}
       >
         {isPending ? (
-          <ActivityIndicator color="#FFFFFF" />
+          <ActivityIndicator color={colors.buttonText} />
         ) : (
           <Text style={styles.saveButtonText}>{isNew ? 'Create Template' : 'Save Changes'}</Text>
         )}
@@ -279,7 +279,7 @@ const makeStyles = (c: ColorPalette) =>
       alignItems: 'center',
       marginTop: Spacing.xl,
     },
-    saveButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: '#FFFFFF' },
+    saveButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: c.buttonText },
     deleteButton: {
       flexDirection: 'row',
       alignItems: 'center',

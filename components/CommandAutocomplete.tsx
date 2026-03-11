@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
+import { shadowElevated } from '../constants/shadows';
 import { COMMANDS, SlashCommand } from '../constants/commands';
 import { useSkills } from '../lib/api';
 
@@ -60,11 +61,7 @@ const makeStyles = (c: ColorPalette) =>
       borderWidth: 1,
       borderColor: c.cardBorder,
       marginBottom: Spacing.xs,
-      shadowColor: c.shadowColor,
-      shadowOffset: { width: 0, height: -2 },
-      shadowOpacity: 0.08,
-      shadowRadius: 8,
-      elevation: 4,
+      ...shadowElevated,
       overflow: 'hidden',
     },
     scrollView: {
@@ -84,6 +81,6 @@ const makeStyles = (c: ColorPalette) =>
     description: {
       fontSize: FontSize.xs,
       color: c.textMuted,
-      marginTop: 2,
+      marginTop: Spacing.xs,
     },
   });

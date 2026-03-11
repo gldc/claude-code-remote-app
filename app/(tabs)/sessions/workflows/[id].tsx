@@ -239,7 +239,7 @@ export default function WorkflowDetailScreen() {
               activeOpacity={0.8}
             >
               {addStep.isPending ? (
-                <ActivityIndicator color="#fff" size="small" />
+                <ActivityIndicator color={colors.buttonText} size="small" />
               ) : (
                 <Text style={styles.submitButtonText}>Add Step</Text>
               )}
@@ -255,10 +255,10 @@ export default function WorkflowDetailScreen() {
         disabled={isRunning || runWorkflow.isPending}
       >
         {runWorkflow.isPending ? (
-          <ActivityIndicator color="#fff" size="small" />
+          <ActivityIndicator color={colors.buttonText} size="small" />
         ) : (
           <>
-            <Ionicons name={isRunning ? 'pause' : 'play'} size={20} color="#fff" />
+            <Ionicons name={isRunning ? 'pause' : 'play'} size={20} color={colors.buttonText} />
             <Text style={styles.runButtonText}>
               {isRunning ? 'Running...' : 'Run Workflow'}
             </Text>
@@ -357,7 +357,7 @@ const makeStyles = (c: ColorPalette) =>
     },
     chipActive: {
       borderColor: c.primary,
-      backgroundColor: c.primary + '20',
+      backgroundColor: c.primaryBg20,
     },
     chipText: { fontSize: FontSize.sm, color: c.textMuted },
     chipTextActive: { color: c.primary },
@@ -368,7 +368,7 @@ const makeStyles = (c: ColorPalette) =>
       alignItems: 'center',
       marginTop: Spacing.lg,
     },
-    submitButtonText: { fontSize: FontSize.md, fontWeight: '700', color: '#fff' },
+    submitButtonText: { fontSize: FontSize.md, fontWeight: '700', color: c.buttonText },
     // Run button
     runButton: {
       flexDirection: 'row',
@@ -381,5 +381,5 @@ const makeStyles = (c: ColorPalette) =>
       marginTop: Spacing.md,
     },
     runButtonDisabled: { opacity: 0.5 },
-    runButtonText: { fontSize: FontSize.md, fontWeight: '700', color: '#fff' },
+    runButtonText: { fontSize: FontSize.md, fontWeight: '700', color: c.buttonText },
   });

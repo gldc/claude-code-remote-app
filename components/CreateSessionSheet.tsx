@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useCreateSession, useProjectsList, useTemplatesList } from '../lib/api';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
+import { shadowElevated } from '../constants/shadows';
 
 interface Props {
   projectDir?: string;
@@ -206,7 +207,7 @@ export const CreateSessionSheet = forwardRef<BottomSheet, Props>(
           activeOpacity={0.8}
         >
           {createSession.isPending ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color={colors.buttonText} />
           ) : (
             <Text style={styles.createButtonText}>Create Session</Text>
           )}
@@ -225,10 +226,7 @@ const makeStyles = (c: ColorPalette) =>
       backgroundColor: c.card,
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
-      shadowColor: c.shadowColor,
-      shadowOffset: { width: 0, height: -2 },
-      shadowOpacity: 0.08,
-      shadowRadius: 8,
+      ...shadowElevated,
     },
     sheetIndicator: {
       backgroundColor: c.cardBorder,
@@ -276,7 +274,7 @@ const makeStyles = (c: ColorPalette) =>
     },
     chipActive: {
       borderColor: c.primary,
-      backgroundColor: c.primary + '20',
+      backgroundColor: c.primaryBg20,
     },
     chipText: { fontSize: FontSize.sm, color: c.textMuted },
     chipTextActive: { color: c.primary },
@@ -305,5 +303,5 @@ const makeStyles = (c: ColorPalette) =>
       alignItems: 'center',
       marginTop: Spacing.lg,
     },
-    createButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: '#FFFFFF' },
+    createButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: c.buttonText },
   });

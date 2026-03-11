@@ -16,6 +16,7 @@ import { StatusBadge } from '../../../../components/StatusBadge';
 import { GitPanel } from '../../../../components/GitPanel';
 import { SessionInfoBar } from '../../../../components/SessionInfoBar';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing } from '../../../../constants/theme';
+import { shadowCard } from '../../../../constants/shadows';
 import type { WSMessageData } from '../../../../lib/types';
 
 export default function SessionDetailScreen() {
@@ -215,8 +216,8 @@ const makeStyles = (c: ColorPalette) =>
       justifyContent: 'center',
     },
     thinkingAvatarText: {
-      color: '#FFFFFF',
-      fontSize: 13,
+      color: c.buttonText,
+      fontSize: FontSize.sm,
       fontWeight: '700',
     },
     thinkingDots: {
@@ -227,10 +228,7 @@ const makeStyles = (c: ColorPalette) =>
       paddingHorizontal: Spacing.md,
       backgroundColor: c.card,
       borderRadius: 16,
-      shadowColor: c.shadowColor,
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.04,
-      shadowRadius: 3,
+      ...shadowCard,
     },
     thinkingText: {
       fontSize: FontSize.sm,

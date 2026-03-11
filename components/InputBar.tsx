@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
+import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius, ComponentSize } from '../constants/theme';
 import { CommandAutocomplete } from './CommandAutocomplete';
 import type { SlashCommand } from '../constants/commands';
 
@@ -72,7 +72,7 @@ export function InputBar({ onSend, onCommand, disabled, placeholder, initialText
           <Ionicons
             name="arrow-up"
             size={18}
-            color={canSend ? '#FFFFFF' : colors.textMuted}
+            color={canSend ? colors.buttonText : colors.textMuted}
           />
         </TouchableOpacity>
       </View>
@@ -94,7 +94,7 @@ const makeStyles = (c: ColorPalette) =>
       flexDirection: 'row',
       alignItems: 'flex-end',
       backgroundColor: c.card,
-      borderRadius: 22,
+      borderRadius: BorderRadius.xl,
       borderWidth: 1,
       borderColor: c.cardBorder,
       paddingLeft: Spacing.lg,
@@ -111,9 +111,9 @@ const makeStyles = (c: ColorPalette) =>
       lineHeight: 21,
     },
     sendButton: {
-      width: 34,
-      height: 34,
-      borderRadius: 17,
+      width: ComponentSize.sendButton,
+      height: ComponentSize.sendButton,
+      borderRadius: ComponentSize.sendButton / 2,
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: c.cardBorder,

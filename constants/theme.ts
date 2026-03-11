@@ -25,6 +25,19 @@ export interface ColorPalette {
   codespanBg: string;
   codespanText: string;
   shadowColor: string;
+  // NEW: Action button text (always white on primary bg)
+  buttonText: string;
+  // NEW: Overlay backgrounds (primary at various opacities)
+  primaryBg10: string;
+  primaryBg15: string;
+  primaryBg20: string;
+  // NEW: Git status colors
+  gitRenamed: string;
+  gitUntracked: string;
+  // NEW: Avatar accent palette (theme-aware)
+  avatarColors: string[];
+  // NEW: ANSI standard link/info blue
+  info: string;
 }
 
 export const LightColors: ColorPalette = {
@@ -42,7 +55,7 @@ export const LightColors: ColorPalette = {
   tabBar: '#FDFAF6',
   tabBarBorder: '#E5DDD3',
   tabBarActive: '#C4613C',
-  tabBarInactive: '#9C9389',
+  tabBarInactive: '#6E6560',
   toolBg: '#EDE8E0',
   toolIconBg: '#E0D8CE',
   codeBg: '#2D2A26',
@@ -50,6 +63,14 @@ export const LightColors: ColorPalette = {
   codespanBg: '#EDE5D8',
   codespanText: '#5D4037',
   shadowColor: '#000000',
+  buttonText: '#FFFFFF',
+  primaryBg10: '#C4613C1A',
+  primaryBg15: '#C4613C26',
+  primaryBg20: '#C4613C33',
+  gitRenamed: '#0969DA',
+  gitUntracked: '#6E7781',
+  avatarColors: ['#C4613C', '#2D8A4E', '#0969DA', '#8250DF', '#BF8700', '#1B7C83', '#CF222E'],
+  info: '#0969DA',
 };
 
 export const DarkColors: ColorPalette = {
@@ -75,6 +96,14 @@ export const DarkColors: ColorPalette = {
   codespanBg: '#3D3935',
   codespanText: '#D4A87C',
   shadowColor: '#000000',
+  buttonText: '#FFFFFF',
+  primaryBg10: '#D4785A1A',
+  primaryBg15: '#D4785A26',
+  primaryBg20: '#D4785A33',
+  gitRenamed: '#539BF5',
+  gitUntracked: '#8B949E',
+  avatarColors: ['#D4785A', '#3DA665', '#539BF5', '#B87FFF', '#D4A017', '#39C5CF', '#E5534B'],
+  info: '#539BF5',
 };
 
 /** Backwards-compatible — defaults to light */
@@ -128,4 +157,34 @@ export const BorderRadius = {
 export const FontFamily = {
   mono: 'Menlo',
   default: undefined,
+};
+
+export const IconSize = {
+  xs: 12,
+  sm: 14,
+  md: 16,
+  lg: 18,
+  xl: 20,
+  xxl: 24,
+  xxxl: 28,
+};
+
+export const ComponentSize = {
+  avatarSm: 26,
+  avatar: 36,
+  avatarLg: 40,
+  statusDot: 8,
+  statusDotSm: 6,
+  sendButton: 34,
+  fab: 56,
+  fabIcon: 28,
+};
+
+export const Opacity = {
+  xs: 0.04,
+  sm: 0.08,
+  md: 0.15,
+  lg: 0.25,
+  xl: 0.4,
+  xxl: 0.6,
 };

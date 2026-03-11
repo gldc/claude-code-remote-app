@@ -7,6 +7,7 @@ import { BashOutputCard } from './BashOutputCard';
 import { ApprovalCard } from './ApprovalCard';
 import { ErrorCard } from './ErrorCard';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
+import { shadowCard } from '../constants/shadows';
 
 interface Props {
   message: WSMessageData;
@@ -101,18 +102,18 @@ const makeStyles = (c: ColorPalette) =>
       flexDirection: 'row',
       justifyContent: 'flex-end',
       paddingHorizontal: Spacing.lg,
-      paddingVertical: 3,
+      paddingVertical: Spacing.xs,
     },
     userBubble: {
       backgroundColor: c.primary,
       borderRadius: 18,
       borderBottomRightRadius: 4,
       paddingHorizontal: Spacing.lg,
-      paddingVertical: Spacing.sm + 2,
+      paddingVertical: Spacing.md,
       maxWidth: '78%',
     },
     userText: {
-      color: '#FFFFFF',
+      color: c.buttonText,
       fontSize: FontSize.md,
       lineHeight: 21,
     },
@@ -120,12 +121,12 @@ const makeStyles = (c: ColorPalette) =>
       flexDirection: 'row',
       alignItems: 'flex-start',
       paddingRight: Spacing.xl,
-      paddingVertical: 2,
+      paddingVertical: Spacing.xs,
     },
     avatarCol: {
       width: 40,
       alignItems: 'center',
-      paddingTop: 2,
+      paddingTop: Spacing.xs,
     },
     avatar: {
       width: 26,
@@ -136,8 +137,8 @@ const makeStyles = (c: ColorPalette) =>
       justifyContent: 'center',
     },
     avatarText: {
-      color: '#FFFFFF',
-      fontSize: 13,
+      color: c.buttonText,
+      fontSize: FontSize.sm,
       fontWeight: '700',
     },
     assistantBubble: {
@@ -147,10 +148,7 @@ const makeStyles = (c: ColorPalette) =>
       borderTopLeftRadius: 4,
       paddingVertical: Spacing.sm,
       paddingHorizontal: Spacing.xs,
-      shadowColor: c.shadowColor,
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.04,
-      shadowRadius: 3,
+      ...shadowCard,
     },
     statusRow: {
       flexDirection: 'row',

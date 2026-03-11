@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useWorkflows, useCreateWorkflow, useDeleteWorkflow } from '../../../../lib/api';
 import { useColors, useThemedStyles, type ColorPalette, Spacing, FontSize, BorderRadius } from '../../../../constants/theme';
+import { shadowElevated } from '../../../../constants/shadows';
 import type { Workflow, WorkflowStatus } from '../../../../lib/types';
 
 function WorkflowStatusBadge({ status }: { status: WorkflowStatus }) {
@@ -110,7 +111,7 @@ export default function WorkflowListScreen() {
       )}
 
       <TouchableOpacity style={styles.fab} activeOpacity={0.8} onPress={handleCreate}>
-        <Ionicons name="add" size={28} color="#fff" />
+        <Ionicons name="add" size={28} color={colors.buttonText} />
       </TouchableOpacity>
     </View>
   );
@@ -156,10 +157,6 @@ const makeStyles = (c: ColorPalette) =>
       backgroundColor: c.primary,
       alignItems: 'center',
       justifyContent: 'center',
-      shadowColor: c.shadowColor,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.25,
-      shadowRadius: 4,
-      elevation: 5,
+      ...shadowElevated,
     },
   });

@@ -26,7 +26,7 @@ export const StatusDot = React.memo(function StatusDot({
 }: StatusDotProps) {
   const colors = useColors();
   const dotSize = size === 'sm' ? 8 : 12;
-  const color = colors[STATUS_MAP[status]];
+  const color = colors[STATUS_MAP[status]] as string;
   const opacity = useSharedValue(1);
 
   useEffect(() => {

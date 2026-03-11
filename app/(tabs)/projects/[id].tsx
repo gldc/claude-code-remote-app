@@ -13,7 +13,7 @@ export default function ProjectDetailScreen() {
   const { id, path, newProject } = useLocalSearchParams<{ id: string; path: string; newProject?: string }>();
   const decodedPath = path ? decodeURIComponent(path) : '';
   const projectName = decodedPath.split('/').pop() || 'Project';
-  const { data: sessions } = useSessionsList();
+  const { data: sessions, isLoading: isLoadingSessions, refetch: refetchSessions } = useSessionsList();
   const { data: projects } = useProjectsList();
   const deleteSession = useDeleteSession();
   const archiveSession = useArchiveSession();
@@ -109,6 +109,8 @@ export default function ProjectDetailScreen() {
           data={projectSessions}
           keyExtractor={(s) => s.id}
           renderItem={renderItem}
+          onRefresh={refetchSessions}
+          refreshing={isLoadingSessions}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             <View style={styles.empty}>

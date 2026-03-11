@@ -175,7 +175,7 @@ export default function CreateSessionScreen() {
         activeOpacity={0.8}
       >
         {createSession.isPending ? (
-          <ActivityIndicator color="#FFFFFF" />
+          <ActivityIndicator color={colors.buttonText} />
         ) : (
           <Text style={styles.createButtonText}>Create Session</Text>
         )}
@@ -220,7 +220,7 @@ const makeStyles = (c: ColorPalette) =>
     },
     projectChipActive: {
       borderColor: c.primary,
-      backgroundColor: c.primary + '20',
+      backgroundColor: c.primaryBg20,
     },
     projectChipText: { fontSize: FontSize.sm, color: c.textMuted },
     projectChipTextActive: { color: c.primary },
@@ -231,5 +231,5 @@ const makeStyles = (c: ColorPalette) =>
       alignItems: 'center',
       marginTop: Spacing.xl,
     },
-    createButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: '#FFFFFF' },
+    createButtonText: { fontSize: FontSize.lg, fontWeight: '700', color: c.buttonText },
   });

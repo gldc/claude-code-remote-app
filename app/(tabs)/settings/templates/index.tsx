@@ -4,10 +4,12 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTemplatesList } from '../../../../lib/api';
 import { TemplateCard } from '../../../../components/TemplateCard';
+import { ErrorBanner } from '../../../../components/ui/ErrorBanner';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../../../../constants/theme';
+import { shadowElevated } from '../../../../constants/shadows';
 
 export default function TemplateListScreen() {
-  const { data: templates, isLoading, refetch } = useTemplatesList();
+  const { data: templates, isLoading, isError, error, refetch } = useTemplatesList();
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
 
@@ -23,6 +25,7 @@ export default function TemplateListScreen() {
 
   return (
     <View style={styles.container}>
+      {isError && <ErrorBanner message={error?.message ?? 'Failed to load templates'} onRetry={refetch} />}
       {isLoading ? (
         <ActivityIndicator style={{ flex: 1 }} color={colors.primary} />
       ) : !templates?.length ? (
@@ -57,7 +60,7 @@ export default function TemplateListScreen() {
         onPress={() => router.push('/(tabs)/settings/templates/new')}
         activeOpacity={0.8}
       >
-        <Ionicons name="add" size={28} color="#FFFFFF" />
+        <Ionicons name="add" size={28} color={colors.buttonText} />
       </TouchableOpacity>
     </View>
   );
@@ -94,10 +97,6 @@ const makeStyles = (c: ColorPalette) =>
       backgroundColor: c.primary,
       alignItems: 'center',
       justifyContent: 'center',
-      elevation: 4,
-      shadowColor: c.shadowColor,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.3,
-      shadowRadius: 4,
+      ...shadowElevated,
     },
   });

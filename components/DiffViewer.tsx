@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, Text, View, StyleSheet } from 'react-native';
 import { useColors, useThemedStyles, type ColorPalette, Spacing, FontFamily } from '../constants/theme';
+import { FontSize_code } from '../constants/typography';
 
 interface DiffViewerProps {
   diff: string;
@@ -67,5 +68,5 @@ const makeStyles = (c: ColorPalette) => StyleSheet.create({
   container: { backgroundColor: c.codeBg, borderRadius: 8, maxHeight: 400 },
   diffBlock: { padding: Spacing.sm },
   line: { paddingHorizontal: Spacing.xs, minHeight: 18 },
-  lineText: { fontFamily: FontFamily.mono, fontSize: 12 },
+  lineText: { fontFamily: FontFamily.mono, fontSize: FontSize_code },
 });

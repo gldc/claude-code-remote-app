@@ -15,7 +15,7 @@ export default function AnalyticsScreen() {
     for (const entry of history) {
       const day = entry.updated_at.slice(0, 10);
       if (!byDay.has(day)) byDay.set(day, []);
-      byDay.get(day)!.push(entry.session.percent_remaining);
+      byDay.get(day)!.push(100 - (entry.five_hour?.utilization ?? 100));
     }
     return Array.from(byDay.entries())
       .map(([date, values]) => ({
@@ -47,7 +47,7 @@ export default function AnalyticsScreen() {
           for (const entry of history) {
             const day = entry.updated_at.slice(0, 10);
             if (!byDay.has(day)) byDay.set(day, []);
-            byDay.get(day)!.push(entry.weekly.percent_remaining);
+            byDay.get(day)!.push(100 - (entry.seven_day?.utilization ?? 100));
           }
           const data = Array.from(byDay.entries())
             .map(([date, values]) => ({

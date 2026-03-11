@@ -16,11 +16,10 @@ function getInitials(identity: string): string {
   return identity.slice(0, 2).toUpperCase();
 }
 
-function getAvatarColor(identity: string): string {
-  const COLORS = ['#C4613C', '#2D8A4E', '#0969DA', '#8250DF', '#BF8700', '#1B7C83', '#CF222E'];
+function getAvatarIndex(identity: string): number {
   let hash = 0;
   for (let i = 0; i < identity.length; i++) hash = (hash * 31 + identity.charCodeAt(i)) | 0;
-  return COLORS[Math.abs(hash) % COLORS.length];
+  return Math.abs(hash);
 }
 
 const AVATAR_SIZE = 36;
@@ -44,7 +43,7 @@ export const AvatarRow = React.memo(function AvatarRow({
           activeOpacity={onRemove ? 0.7 : 1}
           style={[
             styles.avatar,
-            { backgroundColor: getAvatarColor(identity), zIndex: visible.length - idx },
+            { backgroundColor: colors.avatarColors[getAvatarIndex(identity) % colors.avatarColors.length], zIndex: visible.length - idx },
             idx > 0 && { marginLeft: OVERLAP },
           ]}
         >
@@ -72,7 +71,7 @@ const makeStyles = (c: ColorPalette) => StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
     borderWidth: 2, borderColor: c.background,
   },
-  initials: { fontSize: FontSize.xs, fontWeight: '700', color: '#FFFFFF' },
+  initials: { fontSize: FontSize.xs, fontWeight: '700', color: c.buttonText },
   overflowAvatar: { backgroundColor: c.cardBorder },
   overflowText: { fontSize: FontSize.xs, fontWeight: '600', color: c.textMuted },
   addButton: { backgroundColor: c.card, borderStyle: 'dashed' as const, borderColor: c.primary },

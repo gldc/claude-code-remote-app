@@ -168,7 +168,7 @@ const makeStyles = (c: ColorPalette) =>
       paddingVertical: Spacing.sm,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: c.cardBorder,
-      gap: 3,
+      gap: Spacing.xs,
     },
     expandedRow: {
       flexDirection: 'row',

@@ -9,6 +9,7 @@ import { SessionCard } from '../../../components/SessionCard';
 import { FilterChips } from '../../../components/FilterChips';
 import { CreateSessionSheet } from '../../../components/CreateSessionSheet';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing } from '../../../constants/theme';
+import { ErrorBanner } from '../../../components/ui/ErrorBanner';
 import type { SessionStatus, SessionSummary } from '../../../lib/types';
 
 const FILTERS = [
@@ -31,7 +32,7 @@ export default function SessionListScreen() {
     : undefined;
   const archivedFilter = isArchived ? true : filter === 'all' ? false : undefined;
 
-  const { data: sessions, isLoading, refetch } = useSessionsList(statusFilter, archivedFilter);
+  const { data: sessions, isLoading, isError, error, refetch } = useSessionsList(statusFilter, archivedFilter);
   const deleteSession = useDeleteSession();
   const archiveSession = useArchiveSession();
 
@@ -63,6 +64,8 @@ export default function SessionListScreen() {
         <Text style={styles.workflowsButtonText}>Workflows</Text>
         <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
       </TouchableOpacity>
+
+      {isError && <ErrorBanner message={error?.message ?? 'Failed to load sessions'} onRetry={refetch} />}
 
       {isLoading ? (
         <ActivityIndicator style={styles.loader} color={colors.primary} />
