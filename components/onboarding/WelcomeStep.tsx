@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius, IconSize } from '../../constants/theme';
 import type { OnboardingStepProps } from './types';
 
-const CCR_REPO_URL = 'https://github.com/anthropics/claude-code-remote';
+const CCR_REPO_URL = 'https://github.com/gldc/claude-code-remote';
 
 export function WelcomeStep({ onNext, onSkip }: OnboardingStepProps) {
   const colors = useColors();

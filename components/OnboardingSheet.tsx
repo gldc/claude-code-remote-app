@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, useWindowDimensions, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
@@ -24,6 +24,8 @@ export function OnboardingSheet() {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const pagerRef = useRef<PagerView>(null);
   const snapPoints = useMemo(() => ['85%'], []);
+  const { height: screenHeight } = useWindowDimensions();
+  const sheetContentHeight = screenHeight * 0.85 - 40; // 85% snap minus handle area
 
   const [currentPage, setCurrentPage] = useState(0);
 
@@ -42,10 +44,10 @@ export function OnboardingSheet() {
   };
 
   const handleFinish = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setHasOnboarded(true);
     setPendingCreateSession(true);
     bottomSheetRef.current?.close();
-    router.replace('/(tabs)/sessions');
   };
 
   return (
@@ -72,10 +74,10 @@ export function OnboardingSheet() {
           ))}
         </View>
 
-        {/* Pager */}
+        {/* Pager — needs explicit height since BottomSheetView sizes to content */}
         <PagerView
           ref={pagerRef}
-          style={styles.pager}
+          style={[styles.pager, { height: sheetContentHeight - 30 }]}
           initialPage={0}
           scrollEnabled={false}
           onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}
