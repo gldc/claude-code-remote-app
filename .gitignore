@@ -42,3 +42,6 @@ yarn-error.*
 
 # working documents
 docs/plans/
+
+# Superpowers brainstorming artifacts
+.superpowers/
