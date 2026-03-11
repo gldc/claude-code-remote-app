@@ -1,15 +1,17 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, FlatList, Text, TouchableOpacity, ActivityIndicator, StyleSheet,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import BottomSheet from '@gorhom/bottom-sheet';
 import { useSessionsList, useDeleteSession, useArchiveSession } from '../../../lib/api';
 import { SessionCard } from '../../../components/SessionCard';
 import { FilterChips } from '../../../components/FilterChips';
 import { CreateSessionSheet } from '../../../components/CreateSessionSheet';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing } from '../../../constants/theme';
 import { ErrorBanner } from '../../../components/ui/ErrorBanner';
+import { useAppStore } from '../../../lib/store';
 import type { SessionStatus, SessionSummary } from '../../../lib/types';
 
 const FILTERS = [
@@ -25,6 +27,17 @@ export default function SessionListScreen() {
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
   const router = useRouter();
+
+  const pendingCreate = useAppStore((s) => s.pendingCreateSession);
+  const setPendingCreateSession = useAppStore((s) => s.setPendingCreateSession);
+  const createSheetRef = useRef<BottomSheet>(null);
+
+  useEffect(() => {
+    if (pendingCreate) {
+      createSheetRef.current?.snapToIndex(1);
+      setPendingCreateSession(false);
+    }
+  }, [pendingCreate, setPendingCreateSession]);
 
   const isArchived = filter === 'archived';
   const statusFilter = (filter && filter !== 'all' && filter !== 'archived')
@@ -99,7 +112,7 @@ export default function SessionListScreen() {
         <FilterChips options={FILTERS} selected={filter} onSelect={setFilter} />
       </View>
 
-      <CreateSessionSheet />
+      <CreateSessionSheet ref={createSheetRef} />
     </View>
   );
 }

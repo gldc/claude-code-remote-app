@@ -10,6 +10,7 @@ import { ListItem } from '../../../components/ui/ListItem';
 export default function SettingsScreen() {
   const hostConfig = useAppStore((s) => s.hostConfig);
   const setHostConfig = useAppStore((s) => s.setHostConfig);
+  const setHasOnboarded = useAppStore((s) => s.setHasOnboarded);
   const { data: serverStatus, isLoading: isLoadingStatus, refetch: refetchStatus } = useServerStatus();
   const { data: pushSettings } = usePushSettings();
   const updatePush = useUpdatePushSettings();
@@ -162,6 +163,17 @@ export default function SettingsScreen() {
           );
         })()}
       </View>
+
+      <SectionHeader>App</SectionHeader>
+      <ListItem
+        icon="refresh"
+        title="Replay Onboarding"
+        onPress={() => {
+          setHasOnboarded(false);
+          router.push('/(tabs)/sessions');
+        }}
+        spaced={false}
+      />
 
       <View style={{ height: Spacing.xxl * 2 }} />
     </ScrollView>
