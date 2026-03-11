@@ -6,11 +6,14 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { queryClient } from '../lib/api';
 import { useNotificationSetup } from '../lib/notifications';
 import { useColors } from '../constants/theme';
+import { useAppStore } from '../lib/store';
+import { OnboardingSheet } from '../components/OnboardingSheet';
 
 function AppContent() {
   useNotificationSetup();
   const scheme = useColorScheme();
   const colors = useColors();
+  const hasOnboarded = useAppStore((s) => s.hasOnboarded);
   return (
     <>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
@@ -23,6 +26,7 @@ function AppContent() {
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
+      {!hasOnboarded && <OnboardingSheet />}
     </>
   );
 }
