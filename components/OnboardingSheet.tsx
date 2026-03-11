@@ -53,7 +53,6 @@ export function OnboardingSheet() {
       ref={bottomSheetRef}
       index={0}
       snapPoints={snapPoints}
-      enableDismissOnClose
       enablePanDownToClose
       onClose={() => setHasOnboarded(true)}
       backgroundStyle={styles.sheetBackground}
@@ -127,7 +126,7 @@ const makeStyles = (c: ColorPalette) =>
     progressBar: {
       flex: 1,
       height: 4,
-      borderRadius: BorderRadius.xs,
+      borderRadius: BorderRadius.sm,
     },
     pager: {
       flex: 1,
