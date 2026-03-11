@@ -32,6 +32,12 @@ interface AppState {
 
   pendingSkillInsert: string | null;
   setPendingSkillInsert: (skill: string | null) => void;
+
+  hasOnboarded: boolean;
+  setHasOnboarded: (value: boolean) => void;
+
+  pendingCreateSession: boolean;
+  setPendingCreateSession: (value: boolean) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -74,13 +80,25 @@ export const useAppStore = create<AppState>()(
 
       pendingSkillInsert: null,
       setPendingSkillInsert: (skill) => set({ pendingSkillInsert: skill }),
+
+      hasOnboarded: false,
+      setHasOnboarded: (value) => set({ hasOnboarded: value }),
+
+      pendingCreateSession: false,
+      setPendingCreateSession: (value) => set({ pendingCreateSession: value }),
     }),
     {
       name: 'claude-code-remote-storage',
       storage: createJSONStorage(() => secureStorage),
       partialize: (state) => ({
         hostConfig: state.hostConfig,
+        hasOnboarded: state.hasOnboarded,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state && state.hostConfig.address && !state.hasOnboarded) {
+          state.setHasOnboarded(true);
+        }
+      },
     }
   )
 );
