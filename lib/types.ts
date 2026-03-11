@@ -150,23 +150,23 @@ export interface StatusColors {
 
 // --- Usage (Group 1) ---
 export interface UsageWindow {
-  percent_remaining: number;
-  resets_in_seconds: number;
-}
-
-export interface UsageWindowWithReserve extends UsageWindow {
-  reserve_percent: number;
+  /** 0–100 utilization percentage */
+  utilization: number;
+  /** ISO 8601 timestamp when the window resets */
+  resets_at: string;
 }
 
 export interface ExtraUsage {
-  monthly_spend: number;
+  is_enabled: boolean;
   monthly_limit: number;
+  used_credits: number;
 }
 
 export interface UsageData {
-  session: UsageWindow;
-  weekly: UsageWindowWithReserve;
-  sonnet: UsageWindow;
+  five_hour: UsageWindow;
+  seven_day: UsageWindow;
+  seven_day_sonnet: UsageWindow | null;
+  seven_day_opus: UsageWindow | null;
   extra_usage: ExtraUsage;
   plan_tier: string;
   updated_at: string;

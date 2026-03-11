@@ -3,8 +3,13 @@ import { Text } from 'react-native';
 import { useColors, FontSize } from '../constants/theme';
 
 interface TimeCountdownProps {
-  seconds: number;
+  /** ISO 8601 timestamp when the window resets */
+  resetsAt: string;
   prefix?: string;
+}
+
+function secondsUntil(isoDate: string): number {
+  return Math.max(0, Math.floor((new Date(isoDate).getTime() - Date.now()) / 1000));
 }
 
 function formatCountdown(totalSeconds: number): string {
@@ -19,18 +24,18 @@ function formatCountdown(totalSeconds: number): string {
 }
 
 export const TimeCountdown = React.memo(function TimeCountdown({
-  seconds, prefix = 'Resets in',
+  resetsAt, prefix = 'Resets in',
 }: TimeCountdownProps) {
   const colors = useColors();
-  const [remaining, setRemaining] = useState(seconds);
+  const [remaining, setRemaining] = useState(() => secondsUntil(resetsAt));
 
   useEffect(() => {
-    setRemaining(seconds);
+    setRemaining(secondsUntil(resetsAt));
     const interval = setInterval(() => {
-      setRemaining((r) => Math.max(0, r - 60));
+      setRemaining(secondsUntil(resetsAt));
     }, 60000);
     return () => clearInterval(interval);
-  }, [seconds]);
+  }, [resetsAt]);
 
   return (
     <Text style={{ fontSize: FontSize.xs, color: colors.textMuted }}>

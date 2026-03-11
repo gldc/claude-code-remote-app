@@ -13,7 +13,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
       icon="folder-outline"
       title={project.name}
       subtitle={project.path}
-      onPress={() => router.push(`/(tabs)/projects/${project.id}`)}
+      onPress={() => router.push(`/(tabs)/projects/${project.id}?path=${encodeURIComponent(project.path)}`)}
     />
   );
 }

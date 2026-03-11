@@ -10,6 +10,11 @@ export default function SessionDetailLayout() {
         headerStyle: { backgroundColor: colors.background },
         headerTintColor: colors.text,
       }}
-    />
+    >
+      <Stack.Screen name="index" options={{ title: 'Session' }} />
+      <Stack.Screen name="mcp" options={{ title: 'MCP Servers' }} />
+      <Stack.Screen name="skills" options={{ title: 'Skills' }} />
+      <Stack.Screen name="settings" options={{ title: 'Settings' }} />
+    </Stack>
   );
 }

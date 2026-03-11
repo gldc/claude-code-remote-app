@@ -10,6 +10,9 @@ export default function WorkflowsLayout() {
         headerStyle: { backgroundColor: colors.background },
         headerTintColor: colors.text,
       }}
-    />
+    >
+      <Stack.Screen name="index" options={{ title: 'Workflows' }} />
+      <Stack.Screen name="[id]" options={{ title: 'Workflow' }} />
+    </Stack>
   );
 }
