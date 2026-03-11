@@ -13,11 +13,13 @@ Bottom sheet with horizontal swipe carousel that appears on first app launch. Gu
 
 ## Presentation
 
-- `@gorhom/bottom-sheet` at ~85% snap point, overlaying the main app (Sessions tab dimmed behind)
-- Horizontal `FlatList` with `pagingEnabled` (or `react-native-pager-view`) for step carousel
+- `@gorhom/bottom-sheet` with snap points `['85%']`, `index={0}`, `enableDismissOnClose={true}`
+- `onClose` callback sets `hasOnboarded = true` (swipe-down dismiss)
+- `react-native-pager-view` for horizontal step carousel (avoids gesture conflicts with bottom sheet's vertical pan handler that `FlatList` + `pagingEnabled` would cause)
 - Bar-style progress indicators (5 bars, filled as user advances)
-- "Skip" text button in top-right of each step (except Done)
+- "Skip" text button in top-right of each step (except Done) — **dismisses the entire onboarding** (same as swipe-down), not just the current step
 - Swipe down on sheet to dismiss at any point
+- Step 2 text inputs: use `BottomSheetTextInput` from `@gorhom/bottom-sheet` for proper keyboard handling inside the sheet
 
 ## Steps
 
@@ -53,13 +55,11 @@ Bottom sheet with horizontal swipe carousel that appears on first app launch. Gu
 ### Step 4 — Notifications
 
 - **Hero**: Warning/amber gradient, bell icon
-- **Content**: Toggle switches for three notification types (all on by default):
-  - Approval Requests
-  - Session Completions
-  - Session Errors
-- **Action**: CTA triggers `registerForPushNotificationsAsync()` from `lib/notifications.ts`, which prompts iOS permission dialog
+- **Content**: Explains what notifications are used for (approval requests, session completions, errors). No toggles — the fine-grained toggle controls already exist in Settings. This step is just for the iOS permission prompt.
+- **Action**: CTA calls `getExpoPushToken()` from `lib/notifications.ts`, which triggers the iOS permission dialog and returns the push token. If the server is connected (Step 2 was completed), the existing `useNotificationSetup()` hook in `app/_layout.tsx` will handle server-side token registration on next render cycle.
 - **CTA**: "Enable Notifications →"
-- **Footer**: "You can change these later in Settings"
+- **Secondary**: "Not now" text link advances without prompting
+- **Footer**: "You can customize notification types in Settings"
 - **Gated**: No — advances regardless of permission outcome
 
 ### Step 5 — Done
@@ -67,7 +67,7 @@ Bottom sheet with horizontal swipe carousel that appears on first app launch. Gu
 - **Hero**: Success/green gradient, party emoji
 - **Content**: "You're all set!" summary, encouragement to start first session
 - **No Skip button** — only the final CTA
-- **CTA**: "Start Your First Session" — dismisses sheet, sets `hasOnboarded = true`, opens create session flow
+- **CTA**: "Start Your First Session" — dismisses sheet, sets `hasOnboarded = true`, navigates to Sessions tab and opens `CreateSessionSheet`
 
 ## Architecture
 
@@ -86,16 +86,16 @@ Bottom sheet with horizontal swipe carousel that appears on first app launch. Gu
 
 | File | Change |
 |------|--------|
-| `lib/store.ts` | Add `hasOnboarded` boolean + `setHasOnboarded` action to persisted state |
+| `lib/store.ts` | Add `hasOnboarded` boolean + `setHasOnboarded` action. Must update `partialize` to include `hasOnboarded` so it persists across restarts. |
 | `app/_layout.tsx` | Render `<OnboardingSheet>` when `hasOnboarded === false` |
-| `app/(tabs)/settings/index.tsx` | Add "Replay Onboarding" button that resets `hasOnboarded` |
+| `app/(tabs)/settings/index.tsx` | Add "Replay Onboarding" button in a new "App" section at the bottom, resets `hasOnboarded` |
 
 ### Data Flow
 
 1. App launches → Zustand loads `hasOnboarded` from persistence
 2. `app/_layout.tsx` conditionally renders `<OnboardingSheet>` over the tab navigator
 3. Step 2 writes `hostConfig` to Zustand (same path as Settings screen)
-4. Step 4 calls existing `registerForPushNotificationsAsync()`
+4. Step 4 calls `getExpoPushToken()` for iOS permission; `useNotificationSetup()` in `_layout.tsx` handles server registration
 5. Completion or skip sets `hasOnboarded = true`
 
 ### Visual Design
@@ -107,9 +107,9 @@ Bottom sheet with horizontal swipe carousel that appears on first app launch. Gu
 
 ## Error Handling
 
-- **Connection test fails**: Inline error below inputs, Next stays disabled. User can retry or skip.
-- **User skips at step 2**: `hostConfig` stays empty, app shows empty states. Settings screen is the fallback.
-- **Notification permission denied**: Step advances normally. Toggles reflect denied state. Settings is fallback.
+- **Connection test fails**: Inline error below inputs, Next stays disabled. User can retry or dismiss the entire onboarding via Skip/swipe-down.
+- **User skips onboarding early**: `hostConfig` stays empty (unless they completed Step 2), app shows empty states. Settings screen is the fallback for all configuration.
+- **Notification permission denied**: Step advances normally. Settings is fallback for enabling later.
 - **Sheet dismissed (swipe down)**: Sets `hasOnboarded = true`. User configures manually via Settings.
 
 ## Testing
