@@ -31,6 +31,9 @@ export interface ColorPalette {
   primaryBg10: string;
   primaryBg15: string;
   primaryBg20: string;
+  successBg10: string;
+  warningBg10: string;
+  errorBg10: string;
   // NEW: Git status colors
   gitRenamed: string;
   gitUntracked: string;
@@ -67,6 +70,9 @@ export const LightColors: ColorPalette = {
   primaryBg10: '#C4613C1A',
   primaryBg15: '#C4613C26',
   primaryBg20: '#C4613C33',
+  successBg10: '#2D8A4E1A',
+  warningBg10: '#BF87001A',
+  errorBg10: '#CF222E1A',
   gitRenamed: '#0969DA',
   gitUntracked: '#6E7781',
   avatarColors: ['#C4613C', '#2D8A4E', '#0969DA', '#8250DF', '#BF8700', '#1B7C83', '#CF222E'],
@@ -100,6 +106,9 @@ export const DarkColors: ColorPalette = {
   primaryBg10: '#D4785A1A',
   primaryBg15: '#D4785A26',
   primaryBg20: '#D4785A33',
+  successBg10: '#3DA6651A',
+  warningBg10: '#D4A0171A',
+  errorBg10: '#E5534B1A',
   gitRenamed: '#539BF5',
   gitUntracked: '#8B949E',
   avatarColors: ['#D4785A', '#3DA665', '#539BF5', '#B87FFF', '#D4A017', '#39C5CF', '#E5534B'],
