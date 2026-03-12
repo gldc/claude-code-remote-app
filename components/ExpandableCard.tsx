@@ -6,7 +6,7 @@ import { useColors, useThemedStyles, type ColorPalette, Spacing, FontSize, Borde
 
 interface ExpandableCardProps {
   title: string;
-  icon?: string;
+  icon?: string | { ios: string; android: string };
   badge?: string;
   defaultExpanded?: boolean;
   children: React.ReactNode;
@@ -37,7 +37,7 @@ export const ExpandableCard = React.memo(function ExpandableCard({
         <Text style={styles.title} numberOfLines={1}>{title}</Text>
         {badge && <Text style={styles.badge}>{badge}</Text>}
         <Animated.View style={chevronStyle}>
-          <SymbolView name="chevron.right" size={14} tintColor={colors.textMuted} />
+          <SymbolView name={{ ios: 'chevron.right', android: 'chevron_right' }} size={14} tintColor={colors.textMuted} />
         </Animated.View>
       </TouchableOpacity>
       {!expanded && preview}
