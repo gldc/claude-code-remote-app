@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View, FlatList, Text, TouchableOpacity, ActivityIndicator, Alert, StyleSheet,
   KeyboardAvoidingView, Platform,
@@ -34,6 +34,9 @@ export default function SessionDetailScreen() {
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
 
+  // Reverse messages for inverted FlatList (newest at index 0 = visual bottom)
+  const reversedMessages = useMemo(() => [...messages].reverse(), [messages]);
+
   const handleCommand = useCallback((command: SlashCommand) => {
     switch (command.name) {
       case 'clear':
@@ -51,20 +54,15 @@ export default function SessionDetailScreen() {
     }
   }, [pendingSkillInsert, setPendingSkillInsert]);
 
-  useEffect(() => {
-    if (messages.length > 0) {
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
-    }
-  }, [messages.length]);
-
   const isFirstAssistantInGroup = useCallback(
     (index: number) => {
-      if (messages[index]?.type !== 'assistant_text') return false;
-      if (index === 0) return true;
-      const prev = messages[index - 1];
+      // In reversed array, the "previous" message in chronological order is at index + 1
+      if (reversedMessages[index]?.type !== 'assistant_text') return false;
+      if (index === reversedMessages.length - 1) return true;
+      const prev = reversedMessages[index + 1];
       return prev.type === 'user_message' || prev.type === 'status_change';
     },
-    [messages],
+    [reversedMessages],
   );
 
   const renderItem = useCallback(
@@ -137,21 +135,24 @@ export default function SessionDetailScreen() {
         isConnected={isConnected}
       />
 
+      <GitPanel sessionId={id} />
+
       <FlatList
         ref={flatListRef}
-        data={messages}
-        keyExtractor={(_, i) => String(i)}
+        data={reversedMessages}
+        inverted
+        keyExtractor={(item, i) => `${item.timestamp}-${item.type}-${reversedMessages.length - 1 - i}`}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
-        ListHeaderComponent={<GitPanel sessionId={id} />}
+        maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
         ListEmptyComponent={
           !isThinking ? (
-            <View style={styles.empty}>
+            <View style={[styles.empty, { transform: [{ scaleY: -1 }] }]}>
               <Text style={styles.emptyText}>No messages yet</Text>
             </View>
           ) : null
         }
-        ListFooterComponent={
+        ListHeaderComponent={
           isThinking ? (
             <View style={styles.thinkingRow}>
               <View style={styles.thinkingAvatarCol}>
@@ -191,7 +192,7 @@ const makeStyles = (c: ColorPalette) =>
     headerTitleText: { fontSize: FontSize.lg, fontWeight: '600', color: c.text, flexShrink: 1 },
     listContent: {
       paddingVertical: Spacing.md,
-      paddingBottom: Spacing.xl,
+      paddingTop: Spacing.xl,
     },
     empty: {
       padding: Spacing.xxl * 2,
