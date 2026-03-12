@@ -34,7 +34,7 @@ export function GitPanel({ sessionId }: GitPanelProps) {
     <>
       <ExpandableCard
         title={gitStatus.branch}
-        icon="arrow.triangle.branch"
+        icon={{ ios: 'arrow.triangle.branch', android: 'fork_right' }}
         badge={totalChanges > 0 ? `${totalChanges} changes` : undefined}
       >
         <FileList files={allFiles} onSelect={setSelectedFile} />

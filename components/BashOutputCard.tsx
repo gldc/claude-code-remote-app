@@ -18,7 +18,7 @@ export function BashOutputCard({ output }: BashOutputCardProps) {
   return (
     <ExpandableCard
       title="Bash Output"
-      icon="terminal"
+      icon={{ ios: 'terminal', android: 'terminal' }}
       badge={`${lines.length} lines`}
       preview={
         <Text style={styles.preview} numberOfLines={3}>

@@ -46,7 +46,9 @@ export function ToolResultCard({ output, isError }: Props) {
   const styles = useThemedStyles(colors, makeStyles);
   const contentType = detectContentType(output, isError);
   const lines = output.split('\n');
-  const icon = isError ? 'xmark.circle' : 'checkmark.circle';
+  const icon = isError
+    ? { ios: 'xmark.circle', android: 'cancel' }
+    : { ios: 'checkmark.circle', android: 'check_circle' };
   const badgeText = isError ? 'error' : `${lines.length} lines`;
 
   const renderContent = () => {
