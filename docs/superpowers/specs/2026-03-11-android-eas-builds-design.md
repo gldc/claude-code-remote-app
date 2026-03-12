@@ -19,7 +19,9 @@ Push notifications use Expo's push service (`exp.host/--/api/v2/push/send`), whi
 
 ### 1. Update `expo-symbols` to cross-platform format
 
-The app uses `expo-symbols` (`SymbolView`) in 4 components, but passes SF Symbol names as plain strings (iOS-only). On Android, `expo-symbols` uses Material Symbols. The `name` prop must be changed from a string to a `{ ios, android }` object for cross-platform rendering.
+The app uses `expo-symbols` (`SymbolView`) in 5 components, but passes SF Symbol names as plain strings (iOS-only). As of SDK 55, `expo-symbols` supports Android via Material Symbols and web via Material Symbols (verified in Expo docs). The `name` prop must be changed from a string to a `{ ios, android }` object for cross-platform rendering.
+
+> **Note:** `expo-symbols` is in beta. If the cross-platform `{ ios, android }` name API does not work as documented in `expo-symbols ~55.0.5`, the fallback plan is to replace with `@expo/vector-icons` (Ionicons).
 
 **Affected components and icons:**
 
@@ -30,6 +32,7 @@ The app uses `expo-symbols` (`SymbolView`) in 4 components, but passes SF Symbol
 | ModelPicker | `components/ModelPicker.tsx` | `cpu` | `memory` |
 | ModelPicker | `components/ModelPicker.tsx` | `chevron.down` | `expand_more` |
 | ExpandableCard | `components/ExpandableCard.tsx` | `chevron.right` | `chevron_right` |
+| AvatarRow | `components/AvatarRow.tsx` | `plus` | `add` |
 
 **Callers of ExpandableCard that pass an `icon` prop:**
 
@@ -44,7 +47,7 @@ The app uses `expo-symbols` (`SymbolView`) in 4 components, but passes SF Symbol
 
 ### 2. Add Android adaptive icon to `app.json`
 
-Assets already exist in `assets/images/`. Wire them into the `android` block:
+Assets already exist in `assets/images/`. Add `adaptiveIcon` to the **existing** `android` block in `app.json` (which already has `package`):
 
 ```json
 "android": {
@@ -73,9 +76,22 @@ After config changes, run:
 npx expo prebuild --platform android --clean
 ```
 
-This regenerates the `android/` directory with the updated manifest, icons, and network security config.
+This regenerates the `android/` directory with the updated manifest, icons, and network security config. The `android/` directory is checked into version control as prebuild output — `--clean` will wipe and regenerate it cleanly.
 
-### 5. Run EAS builds
+### 5. Update `eas.json` preview profile for APK output
+
+The `preview` profile currently only sets `"distribution": "internal"`. By default, EAS Build for Android produces an AAB (Android App Bundle), not an APK. For internal distribution without the Play Store, add `buildType: "apk"`:
+
+```json
+"preview": {
+  "distribution": "internal",
+  "android": {
+    "buildType": "apk"
+  }
+}
+```
+
+### 6. Run EAS builds
 
 ```
 eas build --platform android --profile development
@@ -101,7 +117,28 @@ The development profile produces a dev client for local testing. The preview pro
 | `components/ExpandableCard.tsx` | Update `icon` prop type; update chevron `SymbolView` name prop |
 | `components/BashOutputCard.tsx` | Update `icon` prop to `{ ios, android }` object |
 | `components/GitPanel.tsx` | Update `icon` prop to `{ ios, android }` object |
+| `components/AvatarRow.tsx` | Update `SymbolView` name prop to `{ ios, android }` object |
 | `components/ToolResultCard.tsx` | Update `icon` prop to `{ ios, android }` object |
+| `eas.json` | Add `android.buildType: "apk"` to preview profile |
+
+## Splash Screen
+
+The existing `expo-splash-screen` plugin config (backgroundColor, image, imageWidth) works cross-platform. No Android-specific splash overrides are needed. Can be refined later if desired.
+
+## Verification Checklist
+
+After the builds are running on an Android device/emulator:
+
+- [ ] All `SymbolView` icons render correctly (Material Symbols on Android)
+- [ ] Cleartext HTTP to CCR server works (session list loads)
+- [ ] WebSocket connects and streams messages
+- [ ] Push notification token registers with server
+- [ ] Push notifications received on Android
+- [ ] ActionSheet fallback in ModelPicker works (Alert.alert on Android)
+- [ ] Alert.prompt fallback in workflow creation works
+- [ ] Keyboard handling works correctly (adjustResize)
+- [ ] Adaptive icon displays properly (launcher, recent apps)
+- [ ] Splash screen displays on launch
 
 ## Risk Assessment
 
