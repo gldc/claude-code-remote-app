@@ -57,7 +57,7 @@ export const AvatarRow = React.memo(function AvatarRow({
       )}
       {onAdd && (
         <TouchableOpacity onPress={onAdd} style={[styles.avatar, styles.addButton, identities.length > 0 && { marginLeft: OVERLAP }]}>
-          <SymbolView name="plus" size={16} tintColor={colors.primary} />
+          <SymbolView name={{ ios: 'plus', android: 'add' }} size={16} tintColor={colors.primary} />
         </TouchableOpacity>
       )}
     </View>
