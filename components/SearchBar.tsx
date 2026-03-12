@@ -30,7 +30,7 @@ export const SearchBar = React.memo(function SearchBar({
 
   return (
     <View style={styles.container}>
-      <SymbolView name="magnifyingglass" size={16} tintColor={colors.textMuted} />
+      <SymbolView name={{ ios: 'magnifyingglass', android: 'search' }} size={16} tintColor={colors.textMuted} />
       <TextInput
         style={styles.input}
         placeholder={placeholder}
@@ -43,7 +43,7 @@ export const SearchBar = React.memo(function SearchBar({
       />
       {text.length > 0 && (
         <TouchableOpacity onPress={handleClear} hitSlop={8}>
-          <SymbolView name="xmark.circle.fill" size={18} tintColor={colors.textMuted} />
+          <SymbolView name={{ ios: 'xmark.circle.fill', android: 'cancel' }} size={18} tintColor={colors.textMuted} />
         </TouchableOpacity>
       )}
     </View>
