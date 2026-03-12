@@ -50,6 +50,15 @@
         "projectId": "2b217786-e650-43c4-bf18-a36f9ce1aa97"
       }
     },
-    "owner": "gldcio"
+    "owner": "gldcio",
+    "android": {
+      "package": "com.gldc.claudecoderemote",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "usesCleartextTraffic": true
+    }
   }
 }
