@@ -42,9 +42,9 @@ export const ModelPicker = React.memo(function ModelPicker({ selected, onSelect 
 
   return (
     <TouchableOpacity onPress={handlePress} style={styles.container} activeOpacity={0.7}>
-      <SymbolView name="cpu" size={16} tintColor={colors.textMuted} />
+      <SymbolView name={{ ios: 'cpu', android: 'memory' }} size={16} tintColor={colors.textMuted} />
       <Text style={styles.label}>{getModelLabel(selected)}</Text>
-      <SymbolView name="chevron.down" size={12} tintColor={colors.textMuted} />
+      <SymbolView name={{ ios: 'chevron.down', android: 'expand_more' }} size={12} tintColor={colors.textMuted} />
     </TouchableOpacity>
   );
 });
