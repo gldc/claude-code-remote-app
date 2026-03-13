@@ -35,22 +35,22 @@ export function CopyablePressable({ text, children, style }: Props) {
   }, [text, copyText, opacity, toastOpacity]);
 
   return (
-    <Pressable onLongPress={handleLongPress}>
-      <Animated.View style={[style, { opacity }]}>
+    <Animated.View style={[style, { opacity }]}>
+      <Pressable onLongPress={handleLongPress}>
         {children}
-        {showToast && (
-          <Animated.View
-            style={[
-              styles.toast,
-              { backgroundColor: colors.text, opacity: toastOpacity },
-            ]}
-            pointerEvents="none"
-          >
-            <Text style={[styles.toastText, { color: colors.background }]}>Copied</Text>
-          </Animated.View>
-        )}
-      </Animated.View>
-    </Pressable>
+      </Pressable>
+      {showToast && (
+        <Animated.View
+          style={[
+            styles.toast,
+            { backgroundColor: colors.text, opacity: toastOpacity },
+          ]}
+          pointerEvents="none"
+        >
+          <Text style={[styles.toastText, { color: colors.background }]}>Copied</Text>
+        </Animated.View>
+      )}
+    </Animated.View>
   );
 }
 
