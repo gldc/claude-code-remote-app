@@ -58,10 +58,10 @@ export function ToolResultCard({ output, isError }: Props) {
       case 'code':
         return <SyntaxHighlightedText code={output} />;
       case 'error':
-        return <Text style={styles.errorText} selectable>{output}</Text>;
+        return <Text style={styles.errorText}>{output}</Text>;
       case 'plain':
       default:
-        return <Text style={styles.plainText} selectable>{output}</Text>;
+        return <Text style={styles.plainText}>{output}</Text>;
     }
   };
 
@@ -71,7 +71,7 @@ export function ToolResultCard({ output, isError }: Props) {
       icon={icon}
       badge={badgeText}
       preview={
-        <Text selectable style={[styles.preview, isError && styles.errorPreview]} numberOfLines={2}>
+        <Text style={[styles.preview, isError && styles.errorPreview]} numberOfLines={2}>
           {output.slice(0, 200)}
         </Text>
       }

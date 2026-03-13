@@ -107,7 +107,7 @@ export const SyntaxHighlightedText = React.memo(function SyntaxHighlightedText({
             {showLineNumbers && (
               <Text style={[styles.lineNum, { width: lineNumWidth }]}>{lineIdx + 1}</Text>
             )}
-            <Text selectable style={styles.lineText}>
+            <Text style={styles.lineText}>
               {tokens.map((token, tokenIdx) => (
                 <Text key={tokenIdx} style={{ color: colorMap[token.type] }}>
                   {token.text}

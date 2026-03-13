@@ -24,7 +24,7 @@ export function MessageCard({ message, sessionId, isFirstInGroup }: Props) {
       return (
         <View style={styles.userRow}>
           <View style={styles.userBubble}>
-            <Text selectable style={styles.userText}>{message.data.text}</Text>
+            <Text style={styles.userText}>{message.data.text}</Text>
           </View>
         </View>
       );

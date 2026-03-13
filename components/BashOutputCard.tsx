@@ -21,7 +21,7 @@ export function BashOutputCard({ output }: BashOutputCardProps) {
       icon={{ ios: 'terminal', android: 'terminal' }}
       badge={`${lines.length} lines`}
       preview={
-        <Text selectable style={styles.preview} numberOfLines={3}>
+        <Text style={styles.preview} numberOfLines={3}>
           {preview}
         </Text>
       }

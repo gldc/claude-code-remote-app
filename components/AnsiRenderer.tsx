@@ -71,7 +71,7 @@ export const AnsiRenderer = React.memo(function AnsiRenderer({ text }: AnsiRende
 
   return (
     <View style={styles.container}>
-      <Text selectable style={styles.baseText}>
+      <Text style={styles.baseText}>
         {spans.map((span, i) => (
           <Text
             key={i}

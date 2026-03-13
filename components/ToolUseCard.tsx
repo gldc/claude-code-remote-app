@@ -38,7 +38,7 @@ export function ToolUseCard({ toolName, toolInput }: Props) {
       </TouchableOpacity>
       {expanded && (
         <View style={styles.body}>
-          <Text style={styles.code} selectable>
+          <Text style={styles.code}>
             {JSON.stringify(toolInput, null, 2)}
           </Text>
         </View>

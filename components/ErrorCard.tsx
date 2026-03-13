@@ -8,7 +8,7 @@ export function ErrorCard({ message }: { message: string }) {
   return (
     <View style={styles.card}>
       <Ionicons name="alert-circle" size={18} color={colors.error} />
-      <Text selectable style={styles.text}>{message}</Text>
+      <Text style={styles.text}>{message}</Text>
     </View>
   );
 }
