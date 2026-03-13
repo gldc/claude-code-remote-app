@@ -1,23 +1,29 @@
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { useRegisterPushToken, useBaseUrl } from './api';
 import { useAppStore } from './store';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// Lazy-load expo-notifications to avoid crashing in Expo Go on Android (SDK 53+)
+let Notifications: typeof import('expo-notifications') | null = null;
+try {
+  Notifications = require('expo-notifications');
+  Notifications!.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+} catch {
+  // expo-notifications unavailable (Expo Go on Android)
+}
 
 async function registerNotificationCategories(): Promise<void> {
-  if (Platform.OS === 'web') return;
+  if (Platform.OS === 'web' || !Notifications) return;
 
   await Notifications.setNotificationCategoryAsync('approval_request', [
     {
@@ -69,7 +75,7 @@ async function handleNotificationAction(
 }
 
 export async function getExpoPushToken(): Promise<string | null> {
-  if (Platform.OS === 'web') return null;
+  if (Platform.OS === 'web' || !Notifications) return null;
 
   try {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -110,6 +116,8 @@ export function useNotificationSetup() {
   }, [baseUrl]);
 
   useEffect(() => {
+    if (!Notifications) return;
+
     registerNotificationCategories();
 
     const subscription = Notifications.addNotificationResponseReceivedListener(
