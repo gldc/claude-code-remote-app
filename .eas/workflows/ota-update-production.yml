@@ -1,0 +1,13 @@
+name: OTA Update (Production)
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  update:
+    name: Send production update
+    type: update
+    params:
+      channel: production
+      message: "production update"

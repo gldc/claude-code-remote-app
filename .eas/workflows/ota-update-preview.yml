@@ -1,0 +1,13 @@
+name: OTA Update (Preview)
+
+on:
+  push:
+    branches: ['preview']
+
+jobs:
+  update:
+    name: Send preview update
+    type: update
+    params:
+      channel: preview
+      message: "preview update"

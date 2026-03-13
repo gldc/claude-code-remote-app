@@ -47,7 +47,8 @@
             "usesCleartextTraffic": true
           }
         }
-      ]
+      ],
+      "expo-updates"
     ],
     "experiments": {
       "typedRoutes": true
@@ -65,6 +66,14 @@
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundColor": "#cb7b5e"
       }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/2b217786-e650-43c4-bf18-a36f9ce1aa97",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 5000
+    },
+    "runtimeVersion": {
+      "policy": "fingerprint"
     }
   }
 }
