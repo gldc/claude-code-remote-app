@@ -71,7 +71,7 @@ export function ToolResultCard({ output, isError }: Props) {
       icon={icon}
       badge={badgeText}
       preview={
-        <Text style={[styles.preview, isError && styles.errorPreview]} numberOfLines={2}>
+        <Text selectable style={[styles.preview, isError && styles.errorPreview]} numberOfLines={2}>
           {output.slice(0, 200)}
         </Text>
       }

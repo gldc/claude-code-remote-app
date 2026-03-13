@@ -75,12 +75,12 @@ export function ApprovalCard({ sessionId, toolName, toolInput, description, reso
         <Ionicons name="shield-checkmark" size={20} color={colors.warning} />
         <Text style={styles.title}>Approval Required</Text>
       </View>
-      <Text style={styles.toolName}>{toolName}</Text>
+      <Text selectable style={styles.toolName}>{toolName}</Text>
       {description ? (
-        <Text style={styles.description}>{description}</Text>
+        <Text selectable style={styles.description}>{description}</Text>
       ) : null}
       <View style={styles.inputPreview}>
-        <Text style={styles.code} numberOfLines={10}>
+        <Text selectable style={styles.code} numberOfLines={10}>
           {JSON.stringify(toolInput, null, 2)}
         </Text>
       </View>

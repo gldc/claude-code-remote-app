@@ -56,7 +56,7 @@ export const DiffViewer = React.memo(function DiffViewer({ diff }: DiffViewerPro
       <View style={styles.diffBlock}>
         {lines.map((line, i) => (
           <View key={i} style={[styles.line, lineStyles[line.type]]}>
-            <Text style={[styles.lineText, textStyles[line.type]]}>{line.text}</Text>
+            <Text selectable style={[styles.lineText, textStyles[line.type]]}>{line.text}</Text>
           </View>
         ))}
       </View>
