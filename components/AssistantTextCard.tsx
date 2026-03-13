@@ -1,5 +1,6 @@
 import React, { type ReactNode, useMemo } from 'react';
 import { View, ScrollView, StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
+import { CopyablePressable } from './CopyablePressable';
 import Markdown, { Renderer } from 'react-native-marked';
 import { useColors, type ColorPalette, Spacing, FontSize, BorderRadius } from '../constants/theme';
 import { TextVariants, FontSize_code } from '../constants/typography';
@@ -49,7 +50,7 @@ export function AssistantTextCard({ text }: { text: string }) {
   }, [colors]);
 
   return (
-    <View style={styles.container}>
+    <CopyablePressable text={text} style={styles.container}>
       <Markdown
         value={text}
         flatListProps={{ scrollEnabled: false, style: { backgroundColor: 'transparent' } }}
@@ -149,7 +150,7 @@ export function AssistantTextCard({ text }: { text: string }) {
           },
         }}
       />
-    </View>
+    </CopyablePressable>
   );
 }
 

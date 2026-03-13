@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, Text, View, StyleSheet } from 'react-native';
 import { useColors, useThemedStyles, type ColorPalette, Spacing, FontFamily } from '../constants/theme';
+import { CopyablePressable } from './CopyablePressable';
 import { FontSize_code } from '../constants/typography';
 
 interface SyntaxHighlightedTextProps {
@@ -100,7 +101,8 @@ export const SyntaxHighlightedText = React.memo(function SyntaxHighlightedText({
   };
 
   return (
-    <ScrollView horizontal style={styles.container} showsHorizontalScrollIndicator={false}>
+    <CopyablePressable text={code}>
+      <ScrollView horizontal style={styles.container} showsHorizontalScrollIndicator={false}>
       <View style={styles.codeBlock}>
         {tokenLines.map((tokens, lineIdx) => (
           <View key={lineIdx} style={styles.line}>
@@ -118,6 +120,7 @@ export const SyntaxHighlightedText = React.memo(function SyntaxHighlightedText({
         ))}
       </View>
     </ScrollView>
+    </CopyablePressable>
   );
 });
 

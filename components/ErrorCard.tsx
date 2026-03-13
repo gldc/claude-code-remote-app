@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
+import { CopyablePressable } from './CopyablePressable';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
 
@@ -6,10 +7,10 @@ export function ErrorCard({ message }: { message: string }) {
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
   return (
-    <View style={styles.card}>
+    <CopyablePressable text={message} style={styles.card}>
       <Ionicons name="alert-circle" size={18} color={colors.error} />
       <Text style={styles.text}>{message}</Text>
-    </View>
+    </CopyablePressable>
   );
 }
 

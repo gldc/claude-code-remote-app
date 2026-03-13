@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { CopyablePressable } from './CopyablePressable';
 import * as Haptics from 'expo-haptics';
 import { useApproveToolUse, useDenyToolUse, useCreateApprovalRule } from '../lib/api';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius, FontFamily } from '../constants/theme';
@@ -69,8 +70,10 @@ export function ApprovalCard({ sessionId, toolName, toolInput, description, reso
     );
   }
 
+  const copyText = [toolName, description, JSON.stringify(toolInput, null, 2)].filter(Boolean).join('\n');
+
   return (
-    <View style={styles.card}>
+    <CopyablePressable text={copyText} style={styles.card}>
       <View style={styles.header}>
         <Ionicons name="shield-checkmark" size={20} color={colors.warning} />
         <Text style={styles.title}>Approval Required</Text>
@@ -118,7 +121,7 @@ export function ApprovalCard({ sessionId, toolName, toolInput, description, reso
         <Ionicons name="shield-checkmark-outline" size={14} color={colors.primary} />
         <Text style={styles.alwaysApproveText}>Always approve {toolName}</Text>
       </TouchableOpacity>
-    </View>
+    </CopyablePressable>
   );
 }
 

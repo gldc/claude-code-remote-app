@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native';
 import type { WSMessageData } from '../lib/types';
 import { AssistantTextCard } from './AssistantTextCard';
+import { CopyablePressable } from './CopyablePressable';
 import { ToolUseCard } from './ToolUseCard';
 import { ToolResultCard } from './ToolResultCard';
 import { BashOutputCard } from './BashOutputCard';
@@ -23,9 +24,9 @@ export function MessageCard({ message, sessionId, isFirstInGroup }: Props) {
     case 'user_message':
       return (
         <View style={styles.userRow}>
-          <View style={styles.userBubble}>
+          <CopyablePressable text={message.data.text} style={styles.userBubble}>
             <Text style={styles.userText}>{message.data.text}</Text>
-          </View>
+          </CopyablePressable>
         </View>
       );
     case 'assistant_text':

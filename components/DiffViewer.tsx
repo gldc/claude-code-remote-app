@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, Text, View, StyleSheet } from 'react-native';
 import { useColors, useThemedStyles, type ColorPalette, Spacing, FontFamily } from '../constants/theme';
+import { CopyablePressable } from './CopyablePressable';
 import { FontSize_code } from '../constants/typography';
 
 interface DiffViewerProps {
@@ -52,7 +53,8 @@ export const DiffViewer = React.memo(function DiffViewer({ diff }: DiffViewerPro
   };
 
   return (
-    <ScrollView horizontal style={styles.container} showsHorizontalScrollIndicator={false}>
+    <CopyablePressable text={diff}>
+      <ScrollView horizontal style={styles.container} showsHorizontalScrollIndicator={false}>
       <View style={styles.diffBlock}>
         {lines.map((line, i) => (
           <View key={i} style={[styles.line, lineStyles[line.type]]}>
@@ -61,6 +63,7 @@ export const DiffViewer = React.memo(function DiffViewer({ diff }: DiffViewerPro
         ))}
       </View>
     </ScrollView>
+    </CopyablePressable>
   );
 });
 

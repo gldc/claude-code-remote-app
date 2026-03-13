@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { CopyablePressable } from './CopyablePressable';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius, FontFamily } from '../constants/theme';
 import { FontSize_code } from '../constants/typography';
 
@@ -17,7 +18,7 @@ export function ToolUseCard({ toolName, toolInput }: Props) {
   const summary = getSummary(toolName, toolInput);
 
   return (
-    <View style={styles.card}>
+    <CopyablePressable text={JSON.stringify(toolInput, null, 2)} style={styles.card}>
       <TouchableOpacity
         style={styles.header}
         onPress={() => setExpanded(!expanded)}
@@ -43,7 +44,7 @@ export function ToolUseCard({ toolName, toolInput }: Props) {
           </Text>
         </View>
       )}
-    </View>
+    </CopyablePressable>
   );
 }
 

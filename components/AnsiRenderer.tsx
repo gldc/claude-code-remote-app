@@ -1,8 +1,13 @@
 import React from 'react';
 import { Text, View, StyleSheet, useColorScheme } from 'react-native';
 import { useColors, useThemedStyles, type ColorPalette, Spacing, FontFamily } from '../constants/theme';
+import { CopyablePressable } from './CopyablePressable';
 import { FontSize_code } from '../constants/typography';
 import { AnsiColorsLight, AnsiColorsDark, ansiToArray, ansiBrightToArray } from '../constants/ansiColors';
+
+function stripAnsi(text: string): string {
+  return text.replace(/\x1b\[[0-9;]*m/g, '');
+}
 
 interface AnsiRendererProps {
   text: string;
@@ -70,7 +75,7 @@ export const AnsiRenderer = React.memo(function AnsiRenderer({ text }: AnsiRende
   const spans = parseAnsi(text, normalColors, brightColors);
 
   return (
-    <View style={styles.container}>
+    <CopyablePressable text={stripAnsi(text)} style={styles.container}>
       <Text style={styles.baseText}>
         {spans.map((span, i) => (
           <Text
@@ -87,7 +92,7 @@ export const AnsiRenderer = React.memo(function AnsiRenderer({ text }: AnsiRende
           </Text>
         ))}
       </Text>
-    </View>
+    </CopyablePressable>
   );
 });
 

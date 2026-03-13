@@ -1,6 +1,7 @@
 import React from 'react';
 import { Text, StyleSheet } from 'react-native';
 import { ExpandableCard } from './ExpandableCard';
+import { CopyablePressable } from './CopyablePressable';
 import { DiffViewer } from './DiffViewer';
 import { SyntaxHighlightedText } from './SyntaxHighlightedText';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, FontFamily } from '../constants/theme';
@@ -66,18 +67,20 @@ export function ToolResultCard({ output, isError }: Props) {
   };
 
   return (
-    <ExpandableCard
-      title="Tool Result"
-      icon={icon}
-      badge={badgeText}
-      preview={
-        <Text style={[styles.preview, isError && styles.errorPreview]} numberOfLines={2}>
-          {output.slice(0, 200)}
-        </Text>
-      }
-    >
-      {renderContent()}
-    </ExpandableCard>
+    <CopyablePressable text={output}>
+      <ExpandableCard
+        title="Tool Result"
+        icon={icon}
+        badge={badgeText}
+        preview={
+          <Text style={[styles.preview, isError && styles.errorPreview]} numberOfLines={2}>
+            {output.slice(0, 200)}
+          </Text>
+        }
+      >
+        {renderContent()}
+      </ExpandableCard>
+    </CopyablePressable>
   );
 }
 
