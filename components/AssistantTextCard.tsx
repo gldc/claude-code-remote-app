@@ -1,5 +1,5 @@
 import React, { type ReactNode, useMemo } from 'react';
-import { View, ScrollView, StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
+import { Text, ScrollView, StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
 import { CopyablePressable } from './CopyablePressable';
 import Markdown, { Renderer } from 'react-native-marked';
 import { useColors, type ColorPalette, Spacing, FontSize, BorderRadius } from '../constants/theme';
@@ -46,7 +46,17 @@ export function AssistantTextCard({ text }: { text: string }) {
   const colors = useColors();
   const renderer = useMemo(() => {
     const Cls = createRenderer(colors);
-    return new Cls();
+    const instance = new Cls();
+    // Override the library's private getTextNode to remove `selectable` prop.
+    // react-native-marked hardcodes <Text selectable> which causes inconsistent
+    // selection behavior across platforms. Our CopyablePressable handles copying.
+    (instance as any).getTextNode = function (
+      children: string | ReactNode[],
+      styles?: TextStyle,
+    ): ReactNode {
+      return <Text key={this.getKey()} style={styles}>{children}</Text>;
+    };
+    return instance;
   }, [colors]);
 
   return (
