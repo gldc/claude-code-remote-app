@@ -1,6 +1,14 @@
 import { useCallback } from 'react';
 import { View, Text, TextInput, Switch, ScrollView, StyleSheet, Alert, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
+import Constants from 'expo-constants';
+
+let updateChannel: string | undefined;
+try {
+  updateChannel = require('expo-updates').channel;
+} catch {
+  // expo-updates unavailable in Expo Go
+}
 import { useAppStore } from '../../../lib/store';
 import { useServerStatus, usePushSettings, useUpdatePushSettings } from '../../../lib/api';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../../../constants/theme';
@@ -175,6 +183,11 @@ export default function SettingsScreen() {
         spaced={false}
       />
 
+      <Text style={styles.versionTag}>
+        v{Constants.expoConfig?.version ?? '?'}
+        {updateChannel && updateChannel !== 'production' ? ` (${updateChannel})` : ''}
+      </Text>
+
       <View style={{ height: Spacing.xxl * 2 }} />
     </ScrollView>
   );
@@ -224,5 +237,11 @@ const makeStyles = (c: ColorPalette) =>
       fontSize: FontSize.xs,
       color: c.textMuted,
       marginTop: Spacing.xs,
+    },
+    versionTag: {
+      fontSize: FontSize.xs,
+      color: c.textMuted,
+      textAlign: 'center',
+      marginTop: Spacing.xl,
     },
   });
