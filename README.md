@@ -17,6 +17,7 @@ Expo App (Phone) --> Tailscale VPN --> Mac --> CCR Server --> Claude Code CLI
 - **Dark mode** — System-matching light/dark theme
 - **Templates** — Reusable session configurations
 - **Project browser** — Scan and register project directories
+- **OTA updates** — Channel-based over-the-air updates via EAS Update (preview → production)
 
 ## Screenshots
 
@@ -65,6 +66,7 @@ Open the app → Settings tab → enter your Mac's Tailscale IP (e.g., `100.x.y.
 | UI | [Bottom Sheet](https://gorhom.github.io/react-native-bottom-sheet/), [Reanimated](https://docs.swmansion.com/react-native-reanimated/), [Gesture Handler](https://docs.swmansion.com/react-native-gesture-handler/) |
 | Markdown | [react-native-marked](https://github.com/gmsec/react-native-marked) |
 | Notifications | [Expo Notifications](https://docs.expo.dev/push-notifications/overview/) |
+| OTA Updates | [EAS Update](https://docs.expo.dev/eas-update/introduction/) with channel-based deployment |
 
 ## Project Structure
 

@@ -120,6 +120,37 @@ Key polling intervals: sessions list 5s, individual session 5s, server status 10
 - **Dev client required**: Native config changes (push notifications, app scheme, userInterfaceStyle, ATS) require an EAS build or `npx expo run:ios`, not Expo Go.
 - **App icon**: Uses Apple Icon Composer `.icon` bundle format via `ios.icon` in `app.json` (requires Expo SDK 54+).
 
+## OTA Updates
+
+EAS Update is configured with channel-based deployment automated via EAS Workflows.
+
+### Channels
+
+| Channel | Build Profile | Trigger |
+|---------|--------------|---------|
+| `development` | `development` | None (dev client uses local bundler) |
+| `preview` | `preview` | Push to `preview` branch |
+| `production` | `production` | Push to `main` branch |
+
+### Branching Workflow
+
+```
+feature branch → merge to preview → merge to main
+                      ↓                    ↓
+                 OTA to preview       OTA to production
+```
+
+- Use `preview` to test OTA updates on device before promoting to production.
+- Merge directly to `main` only for low-risk changes.
+- Native changes (new plugins, SDK upgrades, `app.json` native config) still require `eas build` + store submission — OTA only covers JS/asset changes.
+
+### Config
+
+- `app.json`: `updates.checkAutomatically: "ON_LOAD"`, `runtimeVersion.policy: "fingerprint"`
+- `eas.json`: each build profile has a `channel` key
+- `.eas/workflows/`: two YAML files trigger OTA updates on branch push (requires GitHub repo linked to EAS)
+- `expo-updates` must be guarded with try/catch when imported (crashes in Expo Go) — see `lib/notifications.ts` for the established pattern.
+
 ## Session Detail Screen (`sessions/[id].tsx`)
 
 The most complex screen. Key behaviors:
