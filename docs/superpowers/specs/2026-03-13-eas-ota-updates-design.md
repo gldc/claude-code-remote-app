@@ -12,7 +12,13 @@ Currently, every JS/asset change requires a full native build and (for productio
 
 ### 1. Install `expo-updates`
 
-Add the `expo-updates` package as a dependency.
+```bash
+npx expo install expo-updates
+```
+
+Use `npx expo install` (not `npm install`) to ensure the version is compatible with SDK 55.
+
+**Important:** Adding `expo-updates` modifies native code. After this change, you must run `eas build` for each profile (development, preview, production) before OTA updates will function. This is a one-time requirement.
 
 ### 2. App Configuration (`app.json`)
 
@@ -21,25 +27,33 @@ Add the following to the `expo` object:
 ```json
 {
   "updates": {
+    "url": "https://u.expo.dev/2b217786-e650-43c4-bf18-a36f9ce1aa97",
     "checkAutomatically": "ON_LOAD",
     "fallbackToCacheTimeout": 5000
   },
   "runtimeVersion": {
-    "policy": "appVersion"
+    "policy": "fingerprint"
   }
 }
 ```
 
+Also add `"expo-updates"` to the `plugins` array (consistent with the existing pattern of explicit plugin declarations in this project).
+
+- **`updates.url`** — EAS Update endpoint using the project's existing `projectId`.
 - **`checkAutomatically: "ON_LOAD"`** — checks for updates every time the app starts (default behavior).
 - **`fallbackToCacheTimeout: 5000`** — waits up to 5 seconds for an update to download before launching the cached version. Balances launch speed with update freshness.
-- **`runtimeVersion.policy: "appVersion"`** — ties update compatibility to the app's `version` field. When a native-breaking change bumps the app version, old updates won't apply to the new binary.
+- **`runtimeVersion.policy: "fingerprint"`** — automatically detects native changes by hashing the project's native configuration. Safer than `"appVersion"` because it doesn't depend on manual version bumps, and avoids conflicts with `appVersionSource: "remote"` in `eas.json`.
 
 ### 3. EAS Configuration (`eas.json`)
 
-Add `channel` to each build profile:
+Add `channel` to each build profile. The existing `cli` and `submit` blocks remain unchanged. Full merged file:
 
 ```json
 {
+  "cli": {
+    "version": ">= 16.28.0",
+    "appVersionSource": "remote"
+  },
   "build": {
     "development": {
       "developmentClient": true,
@@ -57,9 +71,14 @@ Add `channel` to each build profile:
       "autoIncrement": true,
       "channel": "production"
     }
+  },
+  "submit": {
+    "production": {}
   }
 }
 ```
+
+The only changes are adding `"channel"` to each build profile.
 
 ### 4. EAS Workflow Files
 
@@ -78,6 +97,7 @@ jobs:
     type: update
     params:
       channel: preview
+      message: "preview update"
 ```
 
 #### `.eas/workflows/ota-update-production.yml`
@@ -95,17 +115,20 @@ jobs:
     type: update
     params:
       channel: production
+      message: "production update"
 ```
+
+No workflow is needed for the `development` channel — dev client builds use the local bundler and don't consume OTA updates.
 
 ### 5. One-Time Setup (Manual)
 
-- Link the GitHub repository to the EAS project via the Expo dashboard at the project's GitHub settings page.
-- This enables the `on: push` triggers in the workflow files.
+1. Link the GitHub repository to the EAS project via the Expo dashboard at the project's GitHub settings page. This enables the `on: push` triggers in the workflow files.
+2. Run `eas build` for all three profiles to create initial native builds that include `expo-updates`.
 
 ### 6. Rollback & Recovery
 
 - **Anti-bricking measures** are enabled by default in `expo-updates`. If an update causes a crash loop, the app falls back to the embedded bundle.
-- **Manual rollback** is available via `eas update:rollback --channel <channel>` to revert to the previous update on a given channel.
+- **Manual rollback** is available via `eas update:republish` to re-point a channel to a previous update group, or via the Expo dashboard.
 - No additional configuration is needed for either mechanism.
 
 ## Git Branching Workflow
@@ -140,8 +163,8 @@ feature-branch ──> preview branch ──> main branch
 
 | File | Change |
 |------|--------|
-| `package.json` | Add `expo-updates` dependency |
-| `app.json` | Add `updates` and `runtimeVersion` config |
+| `package.json` | Add `expo-updates` dependency (via `npx expo install`) |
+| `app.json` | Add `updates`, `runtimeVersion`, and `expo-updates` plugin entry |
 | `eas.json` | Add `channel` to each build profile |
 | `.eas/workflows/ota-update-preview.yml` | New file — preview update workflow |
 | `.eas/workflows/ota-update-production.yml` | New file — production update workflow |
