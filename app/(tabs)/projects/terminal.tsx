@@ -116,6 +116,8 @@ export default function TerminalScreen() {
       <TerminalView
         wsUrl={wsUrl}
         sendKey={sendKey}
+        ctrlActive={ctrlActive}
+        onCtrlConsumed={() => setCtrlActive(false)}
         theme={theme}
         dom={{
           scrollEnabled: false,

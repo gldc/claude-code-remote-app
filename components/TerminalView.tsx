@@ -9,6 +9,8 @@ import { AnsiColorsLight, AnsiColorsDark, type AnsiPalette } from "../constants/
 interface Props {
   wsUrl: string;
   sendKey: string;
+  ctrlActive: boolean;
+  onCtrlConsumed: () => void;
   theme: "light" | "dark";
   dom: import("expo/dom").DOMProps;
 }
@@ -31,13 +33,19 @@ const THEMES = {
 
 const RECONNECT_DELAYS = [1000, 2000, 4000, 8000, 15000];
 
-export default function TerminalView({ wsUrl, sendKey, theme }: Props) {
+export default function TerminalView({ wsUrl, sendKey, ctrlActive, onCtrlConsumed, theme }: Props) {
   const termRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<Terminal | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttemptRef = useRef(0);
   const reconnectTimerRef = useRef<number | null>(null);
   const closedIntentionallyRef = useRef(false);
+  const ctrlActiveRef = useRef(ctrlActive);
+
+  // Keep ref in sync with prop so the onData closure reads the latest value
+  useEffect(() => {
+    ctrlActiveRef.current = ctrlActive;
+  }, [ctrlActive]);
 
   // Handle key events from native toolbar
   useEffect(() => {
@@ -118,11 +126,15 @@ export default function TerminalView({ wsUrl, sendKey, theme }: Props) {
         // onerror is always followed by onclose, reconnection happens there
       };
 
-      // Forward keystrokes to server
+      // Forward keystrokes to server, applying Ctrl modifier when active
       term.onData((data: string) => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ type: "input", data }));
+        if (ws.readyState !== WebSocket.OPEN) return;
+        let payload = data;
+        if (ctrlActiveRef.current && data.length === 1 && /[a-zA-Z]/.test(data)) {
+          payload = String.fromCharCode(data.toUpperCase().charCodeAt(0) - 64);
+          onCtrlConsumed();
         }
+        ws.send(JSON.stringify({ type: "input", data: payload }));
       });
     }
 
