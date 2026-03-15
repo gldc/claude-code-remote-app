@@ -30,6 +30,8 @@ export const CreateCronJobSheet = forwardRef<BottomSheet>(
     const [useSandbox, setUseSandbox] = useState(false);
     const [timeoutMinutes, setTimeoutMinutes] = useState('');
     const [promptTemplate, setPromptTemplate] = useState('');
+    const [model, setModel] = useState('');
+    const [maxBudget, setMaxBudget] = useState('');
 
     const createCronJob = useCreateCronJob();
     const { data: projects } = useProjectsList();
@@ -49,6 +51,8 @@ export const CreateCronJobSheet = forwardRef<BottomSheet>(
       setUseSandbox(false);
       setTimeoutMinutes('');
       setPromptTemplate('');
+      setModel('');
+      setMaxBudget('');
     }, []);
 
     const handleCreate = () => {
@@ -68,10 +72,12 @@ export const CreateCronJobSheet = forwardRef<BottomSheet>(
           execution_mode: executionMode,
           session_config: {
             name: name.trim(),
-            project_dir: projectDir.trim() || '/tmp',
+            project_dir: projectDir.trim() || 'cron',
             initial_prompt: promptTemplate.trim() || prompt.trim(),
             skip_permissions: skipPermissions,
             use_sandbox: useSandbox,
+            model: model.trim() || undefined,
+            max_budget_usd: maxBudget.trim() ? parseFloat(maxBudget) : undefined,
           },
           project_dir: projectDir.trim() || undefined,
           timeout_minutes: timeout,
@@ -138,6 +144,16 @@ export const CreateCronJobSheet = forwardRef<BottomSheet>(
             value={projectDir}
             onChangeText={setProjectDir}
             placeholder="Leave blank for default cron folder"
+            placeholderTextColor={colors.textMuted}
+            autoCapitalize="none"
+          />
+
+          <Text style={styles.label}>Model (optional)</Text>
+          <TextInput
+            style={styles.input}
+            value={model}
+            onChangeText={setModel}
+            placeholder="e.g., claude-sonnet-4-5-20250514"
             placeholderTextColor={colors.textMuted}
             autoCapitalize="none"
           />
@@ -221,6 +237,16 @@ export const CreateCronJobSheet = forwardRef<BottomSheet>(
             placeholder="Leave blank for no timeout"
             placeholderTextColor={colors.textMuted}
             keyboardType="number-pad"
+          />
+
+          <Text style={styles.label}>Max Budget USD (optional)</Text>
+          <TextInput
+            style={styles.input}
+            value={maxBudget}
+            onChangeText={setMaxBudget}
+            placeholder="e.g., 5.00"
+            placeholderTextColor={colors.textMuted}
+            keyboardType="decimal-pad"
           />
 
           <TouchableOpacity
