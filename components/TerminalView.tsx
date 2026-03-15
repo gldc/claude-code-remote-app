@@ -3,14 +3,19 @@
 import { useEffect, useRef } from "react";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
+import { WebLinksAddon } from "@xterm/addon-web-links";
 import "@xterm/xterm/css/xterm.css";
 import { AnsiColorsLight, AnsiColorsDark, type AnsiPalette } from "../constants/ansiColors";
 
 interface Props {
   wsUrl: string;
   sendKey: string;
+  copyTrigger: string;
   ctrlActive: boolean;
   onCtrlConsumed: () => void;
+  onOpenUrl: (url: string) => void;
+  onCopyText: (text: string) => void;
+  onSelectionChange: (hasSelection: boolean) => void;
   theme: "light" | "dark";
   dom: import("expo/dom").DOMProps;
 }
@@ -33,7 +38,7 @@ const THEMES = {
 
 const RECONNECT_DELAYS = [1000, 2000, 4000, 8000, 15000];
 
-export default function TerminalView({ wsUrl, sendKey, ctrlActive, onCtrlConsumed, theme }: Props) {
+export default function TerminalView({ wsUrl, sendKey, copyTrigger, ctrlActive, onCtrlConsumed, onOpenUrl, onCopyText, onSelectionChange, theme }: Props) {
   const termRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<Terminal | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -41,11 +46,25 @@ export default function TerminalView({ wsUrl, sendKey, ctrlActive, onCtrlConsume
   const reconnectTimerRef = useRef<number | null>(null);
   const closedIntentionallyRef = useRef(false);
   const ctrlActiveRef = useRef(ctrlActive);
+  const onOpenUrlRef = useRef(onOpenUrl);
+  const onCopyTextRef = useRef(onCopyText);
+  const onSelectionChangeRef = useRef(onSelectionChange);
 
-  // Keep ref in sync with prop so the onData closure reads the latest value
+  // Keep refs in sync with props so closures always call the latest version
+  useEffect(() => { ctrlActiveRef.current = ctrlActive; }, [ctrlActive]);
+  useEffect(() => { onOpenUrlRef.current = onOpenUrl; }, [onOpenUrl]);
+  useEffect(() => { onCopyTextRef.current = onCopyText; }, [onCopyText]);
+  useEffect(() => { onSelectionChangeRef.current = onSelectionChange; }, [onSelectionChange]);
+
+  // Handle copy trigger from native toolbar
   useEffect(() => {
-    ctrlActiveRef.current = ctrlActive;
-  }, [ctrlActive]);
+    if (copyTrigger && terminalRef.current) {
+      const selection = terminalRef.current.getSelection();
+      if (selection) {
+        onCopyTextRef.current(selection);
+      }
+    }
+  }, [copyTrigger]);
 
   // Handle key events from native toolbar
   useEffect(() => {
@@ -76,9 +95,20 @@ export default function TerminalView({ wsUrl, sendKey, ctrlActive, onCtrlConsume
     const fitAddon = new FitAddon();
     term.loadAddon(fitAddon);
 
+    const webLinksAddon = new WebLinksAddon((_event, url) => {
+      onOpenUrlRef.current(url);
+    });
+    term.loadAddon(webLinksAddon);
+
     terminalRef.current = term;
     term.open(termRef.current);
     fitAddon.fit();
+
+    // Notify native side when selection changes
+    term.onSelectionChange(() => {
+      const selection = term.getSelection();
+      onSelectionChangeRef.current(selection.length > 0);
+    });
 
     function connect() {
       const ws = new WebSocket(wsUrl);

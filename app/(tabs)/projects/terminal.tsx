@@ -10,6 +10,9 @@ import {
   useColorScheme,
 } from "react-native";
 import { useLocalSearchParams, Stack, router, useNavigation } from "expo-router";
+import * as Clipboard from "expo-clipboard";
+import * as Haptics from "expo-haptics";
+import * as Linking from "expo-linking";
 import { useAppStore } from "../../../lib/store";
 import { useColors, FontSize, Spacing } from "../../../constants/theme";
 import TerminalView from "../../../components/TerminalView";
@@ -31,8 +34,35 @@ export default function TerminalScreen() {
   const colorScheme = useColorScheme();
   const [ctrlActive, setCtrlActive] = useState(false);
   const [sendKey, setSendKey] = useState("");
+  const [copyTrigger, setCopyTrigger] = useState("");
+  const [hasSelection, setHasSelection] = useState(false);
+  const [copyToastVisible, setCopyToastVisible] = useState(false);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const keyboardHeight = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
+
+  // Clean up toast timer on unmount
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
+
+  const handleOpenUrl = useCallback((url: string) => {
+    Linking.openURL(url).catch(() => {});
+  }, []);
+
+  const handleCopyText = useCallback(async (text: string) => {
+    await Clipboard.setStringAsync(text);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setCopyToastVisible(true);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setCopyToastVisible(false), 800);
+  }, []);
+
+  const handleCopyPress = useCallback(() => {
+    setCopyTrigger("copy|" + Date.now());
+  }, []);
 
   // Hide tab bar on this screen
   useEffect(() => {
@@ -116,8 +146,12 @@ export default function TerminalScreen() {
       <TerminalView
         wsUrl={wsUrl}
         sendKey={sendKey}
+        copyTrigger={copyTrigger}
         ctrlActive={ctrlActive}
         onCtrlConsumed={() => setCtrlActive(false)}
+        onOpenUrl={handleOpenUrl}
+        onCopyText={handleCopyText}
+        onSelectionChange={setHasSelection}
         theme={theme}
         dom={{
           scrollEnabled: false,
@@ -125,6 +159,15 @@ export default function TerminalScreen() {
           style: { flex: 1 },
         }}
       />
+
+      {/* Copied toast */}
+      {copyToastVisible && (
+        <View style={styles.toastContainer} pointerEvents="none">
+          <View style={[styles.toast, { backgroundColor: colors.primary }]}>
+            <Text style={[styles.toastText, { color: colors.buttonText }]}>Copied</Text>
+          </View>
+        </View>
+      )}
 
       {/* Key Toolbar */}
       <View
@@ -162,6 +205,27 @@ export default function TerminalScreen() {
             </Text>
           </TouchableOpacity>
         ))}
+        <TouchableOpacity
+          style={[
+            styles.toolbarKey,
+            {
+              backgroundColor: hasSelection ? colors.primary : colors.background,
+              opacity: hasSelection ? 1 : 0.5,
+            },
+          ]}
+          activeOpacity={0.6}
+          onPress={handleCopyPress}
+          disabled={!hasSelection}
+        >
+          <Text
+            style={[
+              styles.toolbarKeyText,
+              { color: hasSelection ? colors.buttonText : colors.text },
+            ]}
+          >
+            Copy
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <Animated.View style={{ height: keyboardHeight }} />
@@ -171,6 +235,23 @@ export default function TerminalScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  toastContainer: {
+    position: "absolute",
+    top: 100,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    zIndex: 10,
+  },
+  toast: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: 8,
+  },
+  toastText: {
+    fontSize: FontSize.sm,
+    fontWeight: "600",
+  },
   toolbar: {
     flexDirection: "row",
     paddingHorizontal: Spacing.sm,
