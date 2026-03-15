@@ -45,3 +45,6 @@ docs/plans/
 
 # Superpowers brainstorming artifacts
 .superpowers/
+
+# Git worktrees
+.worktrees/
