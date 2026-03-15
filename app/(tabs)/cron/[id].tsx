@@ -7,6 +7,7 @@ import { useCronJob, useCronJobHistory, useToggleCronJob, useTriggerCronJob } fr
 import { StatusBadge } from '../../../components/StatusBadge';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../../../constants/theme';
 import { shadowCard } from '../../../constants/shadows';
+import { describeCron, CRON_STATUS_MAP } from '../../../lib/cron-utils';
 import type { CronJobRun, SessionStatus } from '../../../lib/types';
 
 export default function CronDetailScreen() {
@@ -35,13 +36,6 @@ export default function CronDetailScreen() {
     });
   };
 
-  const statusMap: Record<string, string> = {
-    success: 'completed',
-    error: 'error',
-    running: 'running',
-    timeout: 'error',
-  };
-
   const renderRunItem = useCallback(({ item }: { item: CronJobRun }) => (
     <TouchableOpacity
       style={styles.runCard}
@@ -53,7 +47,7 @@ export default function CronDetailScreen() {
         <Text style={styles.runTime}>
           {new Date(item.started_at).toLocaleString()}
         </Text>
-        <StatusBadge status={(statusMap[item.status] || item.status) as SessionStatus} />
+        <StatusBadge status={(CRON_STATUS_MAP[item.status] || item.status) as SessionStatus} />
       </View>
       <View style={styles.runFooter}>
         <Text style={styles.runCost}>${item.cost_usd.toFixed(4)}</Text>
@@ -85,7 +79,7 @@ export default function CronDetailScreen() {
 
         <Text style={styles.summaryDetail}>
           <Ionicons name="timer-outline" size={14} color={colors.textMuted} />{' '}
-          {job.schedule} — {job.execution_mode === 'spawn' ? 'New session each run' : 'Persistent session'}
+          {describeCron(job.schedule)} — {job.execution_mode === 'spawn' ? 'New session each run' : 'Persistent session'}
         </Text>
 
         {job.next_run_at && (

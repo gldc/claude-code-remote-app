@@ -7,7 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { StatusBadge } from './StatusBadge';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
 import { shadowCard } from '../constants/shadows';
-import { describeCron } from '../lib/cron-utils';
+import { describeCron, CRON_STATUS_MAP } from '../lib/cron-utils';
 import type { CronJob, SessionStatus } from '../lib/types';
 
 interface Props {
@@ -52,13 +52,6 @@ export function CronJobCard({ job, onDelete, onToggle }: Props) {
     );
   };
 
-  const statusMap: Record<string, string> = {
-    success: 'completed',
-    error: 'error',
-    running: 'running',
-    timeout: 'error',
-  };
-
   return (
     <Swipeable
       ref={swipeableRef}
@@ -98,7 +91,7 @@ export function CronJobCard({ job, onDelete, onToggle }: Props) {
             )}
           </View>
           {job.last_run_status && (
-            <StatusBadge status={(statusMap[job.last_run_status] || job.last_run_status) as SessionStatus} />
+            <StatusBadge status={(CRON_STATUS_MAP[job.last_run_status] || job.last_run_status) as SessionStatus} />
           )}
         </View>
       </TouchableOpacity>

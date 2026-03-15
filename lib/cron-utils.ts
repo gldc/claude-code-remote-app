@@ -7,6 +7,19 @@ const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 /**
  * Convert a cron expression to a human-readable string.
  */
+/**
+ * Maps CronRunStatus to SessionStatus for StatusBadge display.
+ */
+export const CRON_STATUS_MAP: Record<string, string> = {
+  success: 'completed',
+  error: 'error',
+  running: 'running',
+  timeout: 'error',
+};
+
+/**
+ * Convert a cron expression to a human-readable string.
+ */
 export function describeCron(cron: string): string {
   try {
     const parts = cron.trim().split(/\s+/);
