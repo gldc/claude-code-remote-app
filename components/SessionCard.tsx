@@ -103,9 +103,14 @@ export function SessionCard({ session, onDelete, onArchive }: Props) {
         activeOpacity={0.7}
       >
         <View style={styles.header}>
-          <Text style={[styles.name, session.archived && styles.textArchived]} numberOfLines={1}>
-            {session.name}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 4 }}>
+            {session.cron_job_id && (
+              <Ionicons name="timer-outline" size={14} color={colors.primary} />
+            )}
+            <Text style={[styles.name, session.archived && styles.textArchived]} numberOfLines={1}>
+              {session.name}
+            </Text>
+          </View>
           <StatusBadge status={session.status} />
         </View>
         <Text style={styles.project} numberOfLines={1}>

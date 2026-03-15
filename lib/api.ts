@@ -26,6 +26,10 @@ import type {
   Skill,
   Workflow,
   GitCheckResult,
+  CronJob,
+  CronJobCreate,
+  CronJobUpdate,
+  CronJobRun,
 } from './types';
 
 export const queryClient = new QueryClient({
@@ -628,5 +632,106 @@ export function useRemoveCollaborator(sessionId: string) {
         method: 'DELETE',
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['session', sessionId] }),
+  });
+}
+
+// --- Cron Jobs (Group 11) ---
+
+export function useCronJobsList() {
+  const baseUrl = useBaseUrl();
+  return useQuery<CronJob[]>({
+    queryKey: ['cron-jobs', baseUrl],
+    queryFn: () => apiFetch(baseUrl, '/api/cron-jobs'),
+    enabled: !!baseUrl,
+    refetchInterval: 10000,
+  });
+}
+
+export function useCronJob(id: string) {
+  const baseUrl = useBaseUrl();
+  return useQuery<CronJob>({
+    queryKey: ['cron-job', baseUrl, id],
+    queryFn: () => apiFetch(baseUrl, `/api/cron-jobs/${id}`),
+    enabled: !!baseUrl && !!id,
+    refetchInterval: 10000,
+  });
+}
+
+export function useCreateCronJob() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CronJobCreate) =>
+      apiFetch<CronJob>(baseUrl, '/api/cron-jobs', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['cron-jobs'] }),
+  });
+}
+
+export function useUpdateCronJob() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...data }: CronJobUpdate & { id: string }) =>
+      apiFetch<CronJob>(baseUrl, `/api/cron-jobs/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cron-jobs'] });
+      qc.invalidateQueries({ queryKey: ['cron-job'] });
+    },
+  });
+}
+
+export function useDeleteCronJob() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<void>(baseUrl, `/api/cron-jobs/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cron-jobs'] });
+      qc.invalidateQueries({ queryKey: ['cron-job'] });
+    },
+  });
+}
+
+export function useToggleCronJob() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<CronJob>(baseUrl, `/api/cron-jobs/${id}/toggle`, { method: 'POST' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cron-jobs'] });
+      qc.invalidateQueries({ queryKey: ['cron-job'] });
+    },
+  });
+}
+
+export function useTriggerCronJob() {
+  const baseUrl = useBaseUrl();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch(baseUrl, `/api/cron-jobs/${id}/trigger`, { method: 'POST' }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cron-jobs'] });
+      qc.invalidateQueries({ queryKey: ['cron-job'] });
+      qc.invalidateQueries({ queryKey: ['cron-job-history'] });
+    },
+  });
+}
+
+export function useCronJobHistory(id: string) {
+  const baseUrl = useBaseUrl();
+  return useQuery<CronJobRun[]>({
+    queryKey: ['cron-job-history', baseUrl, id],
+    queryFn: () => apiFetch(baseUrl, `/api/cron-jobs/${id}/history`),
+    enabled: !!baseUrl && !!id,
+    refetchInterval: 15000,
   });
 }
