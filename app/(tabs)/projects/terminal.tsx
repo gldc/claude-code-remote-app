@@ -64,6 +64,13 @@ export default function TerminalScreen() {
     setCopyTrigger("copy|" + Date.now());
   }, []);
 
+  const handlePastePress = useCallback(async () => {
+    const text = await Clipboard.getStringAsync();
+    if (text) {
+      setSendKey(text + "|" + Date.now());
+    }
+  }, []);
+
   // Hide tab bar on this screen
   useEffect(() => {
     const parent = navigation.getParent();
@@ -224,6 +231,23 @@ export default function TerminalScreen() {
             ]}
           >
             Copy
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.toolbarKey,
+            { backgroundColor: colors.background },
+          ]}
+          activeOpacity={0.6}
+          onPress={handlePastePress}
+        >
+          <Text
+            style={[
+              styles.toolbarKeyText,
+              { color: colors.text },
+            ]}
+          >
+            Paste
           </Text>
         </TouchableOpacity>
       </View>
