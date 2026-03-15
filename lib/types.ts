@@ -36,6 +36,7 @@ export interface SessionSummary {
   git_branch: string | null;
   last_message_preview: string | null;
   archived: boolean;
+  cron_job_id?: string | null;
 }
 
 export interface Session extends SessionSummary {
@@ -259,4 +260,60 @@ export interface Workflow {
   steps: WorkflowStep[];
   status: WorkflowStatus;
   created_at: string;
+}
+
+// --- Cron Jobs (Group 10) ---
+export type CronExecutionMode = 'spawn' | 'persistent';
+export type CronRunStatus = 'success' | 'error' | 'running' | 'timeout';
+
+export interface CronJob {
+  id: string;
+  name: string;
+  schedule: string;
+  enabled: boolean;
+  execution_mode: CronExecutionMode;
+  session_config: SessionCreate;
+  persistent_session_id?: string;
+  project_dir: string;
+  timeout_minutes?: number;
+  prompt_template?: string;
+  created_at: string;
+  updated_at: string;
+  next_run_at: string | null;
+  last_run_at: string | null;
+  last_run_status: CronRunStatus | null;
+}
+
+export interface CronJobCreate {
+  name: string;
+  schedule: string;
+  execution_mode: CronExecutionMode;
+  session_config: SessionCreate;
+  persistent_session_id?: string;
+  project_dir?: string;
+  timeout_minutes?: number;
+  prompt_template?: string;
+  enabled?: boolean;
+}
+
+export interface CronJobUpdate {
+  name?: string;
+  schedule?: string;
+  execution_mode?: CronExecutionMode;
+  session_config?: SessionCreate;
+  project_dir?: string;
+  timeout_minutes?: number | null;
+  prompt_template?: string | null;
+  enabled?: boolean;
+}
+
+export interface CronJobRun {
+  id: string;
+  cron_job_id: string;
+  session_id: string | null;
+  status: CronRunStatus;
+  started_at: string;
+  completed_at: string | null;
+  cost_usd: number;
+  error_message?: string;
 }
