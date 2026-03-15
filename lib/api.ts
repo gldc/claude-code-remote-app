@@ -679,7 +679,10 @@ export function useUpdateCronJob() {
         method: 'PATCH',
         body: JSON.stringify(data),
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['cron-jobs'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cron-jobs'] });
+      qc.invalidateQueries({ queryKey: ['cron-job'] });
+    },
   });
 }
 
@@ -689,7 +692,10 @@ export function useDeleteCronJob() {
   return useMutation({
     mutationFn: (id: string) =>
       apiFetch<void>(baseUrl, `/api/cron-jobs/${id}`, { method: 'DELETE' }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['cron-jobs'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cron-jobs'] });
+      qc.invalidateQueries({ queryKey: ['cron-job'] });
+    },
   });
 }
 
@@ -699,7 +705,10 @@ export function useToggleCronJob() {
   return useMutation({
     mutationFn: (id: string) =>
       apiFetch<CronJob>(baseUrl, `/api/cron-jobs/${id}/toggle`, { method: 'POST' }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['cron-jobs'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cron-jobs'] });
+      qc.invalidateQueries({ queryKey: ['cron-job'] });
+    },
   });
 }
 
@@ -709,7 +718,11 @@ export function useTriggerCronJob() {
   return useMutation({
     mutationFn: (id: string) =>
       apiFetch(baseUrl, `/api/cron-jobs/${id}/trigger`, { method: 'POST' }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['cron-jobs'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['cron-jobs'] });
+      qc.invalidateQueries({ queryKey: ['cron-job'] });
+      qc.invalidateQueries({ queryKey: ['cron-job-history'] });
+    },
   });
 }
 
