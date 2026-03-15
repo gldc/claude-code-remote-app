@@ -2,7 +2,7 @@ import { useRef, useState, useCallback } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
-import { TouchableOpacity, Text } from 'react-native';
+import { Text } from 'react-native';
 import { useCronJobsList, useDeleteCronJob, useToggleCronJob } from '../../../lib/api';
 import { CronJobCard } from '../../../components/CronJobCard';
 import { CreateCronJobSheet } from '../../../components/CreateCronJobSheet';
@@ -46,7 +46,6 @@ export default function CronListScreen() {
 
   return (
     <View style={styles.container}>
-      <FilterChips options={FILTER_OPTIONS} selected={filter} onSelect={setFilter} />
       <FlatList
         data={filteredJobs}
         keyExtractor={(item) => item.id}
@@ -61,13 +60,9 @@ export default function CronListScreen() {
           </View>
         }
       />
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => sheetRef.current?.snapToIndex(1)}
-        activeOpacity={0.8}
-      >
-        <Ionicons name="add" size={28} color={colors.buttonText} />
-      </TouchableOpacity>
+      <View style={styles.filterBar}>
+        <FilterChips options={FILTER_OPTIONS} selected={filter} onSelect={setFilter} />
+      </View>
       <CreateCronJobSheet ref={sheetRef} />
     </View>
   );
@@ -76,14 +71,17 @@ export default function CronListScreen() {
 const makeStyles = (c: ColorPalette) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: c.background },
-    list: { paddingTop: Spacing.sm, paddingBottom: 100 },
-    empty: { alignItems: 'center', paddingTop: 100, gap: Spacing.md },
-    emptyText: { fontSize: FontSize.md, color: c.textMuted },
-    fab: {
-      position: 'absolute', bottom: Spacing.xl, right: Spacing.xl,
-      width: 56, height: 56, borderRadius: 28,
-      backgroundColor: c.primary, justifyContent: 'center', alignItems: 'center',
-      elevation: 4, shadowColor: c.shadowColor, shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.25, shadowRadius: 4,
+    list: { flexGrow: 1, justifyContent: 'flex-end', paddingBottom: 100 },
+    empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.sm },
+    emptyText: { fontSize: FontSize.lg, color: c.textMuted, fontWeight: '600' },
+    filterBar: {
+      position: 'absolute',
+      bottom: 50,
+      left: 0,
+      right: 0,
+      backgroundColor: c.background,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: c.cardBorder,
+      paddingBottom: Spacing.xs,
     },
   });
