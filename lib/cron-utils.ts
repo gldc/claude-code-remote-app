@@ -15,9 +15,16 @@ export function describeCron(cron: string): string {
 
     if (hour === '*') return `Every hour at :${min.padStart(2, '0')}`;
     if (dow !== '*' && dom === '*') {
-      const dayNames = dow.split(',').map((d) => {
-        const idx = parseInt(d, 10);
-        return DAYS_OF_WEEK[idx] ?? d;
+      const dayNames = dow.split(',').map((segment) => {
+        // Handle ranges like "1-5"
+        if (segment.includes('-')) {
+          const [start, end] = segment.split('-').map((d) => parseInt(d, 10));
+          const startName = DAYS_OF_WEEK[start] ?? String(start);
+          const endName = DAYS_OF_WEEK[end] ?? String(end);
+          return `${startName}-${endName}`;
+        }
+        const idx = parseInt(segment, 10);
+        return DAYS_OF_WEEK[idx] ?? segment;
       });
       return `${dayNames.join(', ')} at ${hour}:${min.padStart(2, '0')}`;
     }
