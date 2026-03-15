@@ -35,6 +35,36 @@ function buildCron(frequency: Frequency, hour: number, minute: number, selectedD
   }
 }
 
+function parseCron(cron: string): { frequency: Frequency; hour: number; minute: number; selectedDays: string[] } {
+  const defaults = { frequency: 'daily' as Frequency, hour: 9, minute: 0, selectedDays: ['1', '2', '3', '4', '5'] };
+  try {
+    const parts = cron.trim().split(/\s+/);
+    if (parts.length !== 5) return defaults;
+    const [min, hr, dom, , dow] = parts;
+    const minute = parseInt(min, 10) || 0;
+    const hour = hr === '*' ? 0 : (parseInt(hr, 10) || 0);
+
+    if (hr === '*') return { frequency: 'hourly', hour: 0, minute, selectedDays: [] };
+    if (dom !== '*') return { frequency: 'monthly', hour, minute, selectedDays: [] };
+    if (dow !== '*') {
+      // Expand ranges like "1-5" to individual days
+      const days: string[] = [];
+      for (const segment of dow.split(',')) {
+        if (segment.includes('-')) {
+          const [start, end] = segment.split('-').map((d) => parseInt(d, 10));
+          for (let i = start; i <= end; i++) days.push(String(i));
+        } else {
+          days.push(segment);
+        }
+      }
+      return { frequency: 'weekly', hour, minute, selectedDays: days };
+    }
+    return { frequency: 'daily', hour, minute, selectedDays: [] };
+  } catch {
+    return defaults;
+  }
+}
+
 export function SchedulePicker({ value, onChange }: Props) {
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
@@ -75,7 +105,17 @@ export function SchedulePicker({ value, onChange }: Props) {
   return (
     <View>
       <View style={styles.modeToggle}>
-        <TouchableOpacity onPress={() => setAdvanced(!advanced)}>
+        <TouchableOpacity onPress={() => {
+          if (advanced) {
+            // Switching to simple: sync structured state from current value
+            const parsed = parseCron(value);
+            setFrequency(parsed.frequency);
+            setHour(parsed.hour);
+            setMinute(parsed.minute);
+            setSelectedDays(parsed.selectedDays);
+          }
+          setAdvanced(!advanced);
+        }}>
           <Text style={styles.modeToggleText}>{advanced ? 'Simple' : 'Advanced'}</Text>
         </TouchableOpacity>
       </View>
