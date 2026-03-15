@@ -30,7 +30,7 @@ export const CreateCronJobSheet = forwardRef<BottomSheet>(
     const [useSandbox, setUseSandbox] = useState(false);
     const [timeoutMinutes, setTimeoutMinutes] = useState('');
     const [promptTemplate, setPromptTemplate] = useState('');
-    const [model, setModel] = useState('');
+    const [model, setModel] = useState<string | null>(null);
     const [maxBudget, setMaxBudget] = useState('');
 
     const createCronJob = useCreateCronJob();
@@ -51,7 +51,7 @@ export const CreateCronJobSheet = forwardRef<BottomSheet>(
       setUseSandbox(false);
       setTimeoutMinutes('');
       setPromptTemplate('');
-      setModel('');
+      setModel(null);
       setMaxBudget('');
     }, []);
 
@@ -76,7 +76,7 @@ export const CreateCronJobSheet = forwardRef<BottomSheet>(
             initial_prompt: promptTemplate.trim() || prompt.trim(),
             skip_permissions: skipPermissions,
             use_sandbox: useSandbox,
-            model: model.trim() || undefined,
+            model: model || undefined,
             max_budget_usd: maxBudget.trim() ? parseFloat(maxBudget) : undefined,
           },
           project_dir: projectDir.trim() || undefined,
@@ -148,15 +148,25 @@ export const CreateCronJobSheet = forwardRef<BottomSheet>(
             autoCapitalize="none"
           />
 
-          <Text style={styles.label}>Model (optional)</Text>
-          <TextInput
-            style={styles.input}
-            value={model}
-            onChangeText={setModel}
-            placeholder="e.g., claude-sonnet-4-5-20250514"
-            placeholderTextColor={colors.textMuted}
-            autoCapitalize="none"
-          />
+          <Text style={styles.label}>Model</Text>
+          <View style={styles.chipRow}>
+            {[
+              { id: null, label: 'Default' },
+              { id: 'claude-opus-4-6', label: 'Opus 4.6' },
+              { id: 'claude-sonnet-4-6', label: 'Sonnet 4.6' },
+              { id: 'claude-haiku-4-5', label: 'Haiku 4.5' },
+            ].map((m) => (
+              <TouchableOpacity
+                key={m.id ?? 'default'}
+                style={[styles.chip, model === m.id && styles.chipActive]}
+                onPress={() => setModel(m.id)}
+              >
+                <Text style={[styles.chipText, model === m.id && styles.chipTextActive]}>
+                  {m.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
           <Text style={styles.label}>Prompt</Text>
           <TextInput
