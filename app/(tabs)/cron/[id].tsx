@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -41,7 +42,7 @@ export default function CronDetailScreen() {
     timeout: 'error',
   };
 
-  const renderRunItem = ({ item }: { item: CronJobRun }) => (
+  const renderRunItem = useCallback(({ item }: { item: CronJobRun }) => (
     <TouchableOpacity
       style={styles.runCard}
       onPress={() => item.session_id && router.push(`/(tabs)/sessions/${item.session_id}`)}
@@ -66,7 +67,7 @@ export default function CronDetailScreen() {
         <Text style={styles.runError} numberOfLines={2}>{item.error_message}</Text>
       )}
     </TouchableOpacity>
-  );
+  ), [colors, styles]);
 
   return (
     <View style={styles.container}>
