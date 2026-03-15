@@ -20,21 +20,13 @@ export default function CronDetailScreen() {
   const toggleMutation = useToggleCronJob();
   const triggerMutation = useTriggerCronJob();
 
-  if (!job) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.loading}>Loading...</Text>
-      </View>
-    );
-  }
-
-  const handleTrigger = () => {
+  const handleTrigger = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     triggerMutation.mutate(id, {
       onSuccess: () => Alert.alert('Triggered', 'Cron job has been triggered.'),
-      onError: (err) => Alert.alert('Error', err instanceof Error ? err.message : 'Failed'),
+      onError: (err: unknown) => Alert.alert('Error', err instanceof Error ? err.message : 'Failed'),
     });
-  };
+  }, [id, triggerMutation]);
 
   const renderRunItem = useCallback(({ item }: { item: CronJobRun }) => (
     <TouchableOpacity
@@ -62,6 +54,14 @@ export default function CronDetailScreen() {
       )}
     </TouchableOpacity>
   ), [colors, styles]);
+
+  if (!job) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.loading}>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
