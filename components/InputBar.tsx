@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, ActionSheetIOS, Platform, Alert } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius, ComponentSize } from '../constants/theme';
 import { CommandAutocomplete } from './CommandAutocomplete';
 import { AttachmentPreview, type PendingAttachment } from './AttachmentPreview';
+import { AttachmentPicker } from './AttachmentPicker';
 import type { SlashCommand } from '../constants/commands';
 
 interface InputBarProps {
@@ -20,6 +21,7 @@ interface InputBarProps {
 export function InputBar({ onSend, onCommand, disabled, placeholder, initialText }: InputBarProps) {
   const [text, setText] = useState('');
   const [attachments, setAttachments] = useState<PendingAttachment[]>([]);
+  const [showPicker, setShowPicker] = useState(false);
 
   useEffect(() => {
     if (initialText) {
@@ -51,26 +53,7 @@ export function InputBar({ onSend, onCommand, disabled, placeholder, initialText
 
   const handleAttach = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (Platform.OS === 'ios') {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          options: ['Cancel', 'Take Photo', 'Photo Library', 'Choose File'],
-          cancelButtonIndex: 0,
-        },
-        (buttonIndex) => {
-          if (buttonIndex === 1) pickCamera();
-          else if (buttonIndex === 2) pickLibrary();
-          else if (buttonIndex === 3) pickDocument();
-        }
-      );
-    } else {
-      Alert.alert('Attach', 'Choose an option', [
-        { text: 'Take Photo', onPress: pickCamera },
-        { text: 'Photo Library', onPress: pickLibrary },
-        { text: 'Choose File', onPress: pickDocument },
-        { text: 'Cancel', style: 'cancel' },
-      ]);
-    }
+    setShowPicker(true);
   };
 
   const pickCamera = async () => {
@@ -174,6 +157,13 @@ export function InputBar({ onSend, onCommand, disabled, placeholder, initialText
           />
         </TouchableOpacity>
       </View>
+      <AttachmentPicker
+        visible={showPicker}
+        onClose={() => setShowPicker(false)}
+        onCamera={pickCamera}
+        onLibrary={pickLibrary}
+        onDocument={pickDocument}
+      />
     </View>
   );
 }
