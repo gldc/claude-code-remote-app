@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-import { useCronJob, useCronJobHistory, useToggleCronJob, useTriggerCronJob } from '../../../lib/api';
+import { useCronJob, useCronJobHistory, useToggleCronJob, useTriggerCronJob, useShowCost } from '../../../lib/api';
 import { StatusBadge } from '../../../components/StatusBadge';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../../../constants/theme';
 import { shadowCard } from '../../../constants/shadows';
@@ -12,6 +12,7 @@ import type { CronJobRun, SessionStatus } from '../../../lib/types';
 
 export default function CronDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const showCost = useShowCost();
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
 
@@ -42,7 +43,7 @@ export default function CronDetailScreen() {
         <StatusBadge status={(CRON_STATUS_MAP[item.status] || item.status) as SessionStatus} />
       </View>
       <View style={styles.runFooter}>
-        <Text style={styles.runCost}>${item.cost_usd.toFixed(4)}</Text>
+        {showCost && <Text style={styles.runCost}>${item.cost_usd.toFixed(4)}</Text>}
         {item.completed_at && (
           <Text style={styles.runDuration}>
             {Math.round((new Date(item.completed_at).getTime() - new Date(item.started_at).getTime()) / 1000)}s

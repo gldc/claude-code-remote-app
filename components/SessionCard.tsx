@@ -8,6 +8,7 @@ import { StatusBadge } from './StatusBadge';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
 import { shadowCard } from '../constants/shadows';
 import type { SessionSummary } from '../lib/types';
+import { useShowCost } from '../lib/api';
 
 interface Props {
   session: SessionSummary;
@@ -17,6 +18,7 @@ interface Props {
 
 export function SessionCard({ session, onDelete, onArchive }: Props) {
   const swipeableRef = useRef<Swipeable>(null);
+  const showCost = useShowCost();
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
 
@@ -122,7 +124,7 @@ export function SessionCard({ session, onDelete, onArchive }: Props) {
           </Text>
         )}
         <View style={styles.footer}>
-          <Text style={styles.cost}>${session.total_cost_usd.toFixed(2)}</Text>
+          {showCost && <Text style={styles.cost}>${session.total_cost_usd.toFixed(2)}</Text>}
           <Text style={styles.time}>
             {new Date(session.updated_at).toLocaleTimeString()}
           </Text>

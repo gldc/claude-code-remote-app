@@ -7,7 +7,7 @@ import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Share } from 'react-native';
 import type { SlashCommand } from '../../../../constants/commands';
-import { useSession, usePauseSession, useSendPrompt, useExportSession } from '../../../../lib/api';
+import { useSession, usePauseSession, useSendPrompt, useExportSession, useShowCost } from '../../../../lib/api';
 import { useSessionStream } from '../../../../lib/websocket';
 import { useAppStore } from '../../../../lib/store';
 import { MessageCard } from '../../../../components/MessageCard';
@@ -22,6 +22,7 @@ import type { WSMessageData } from '../../../../lib/types';
 export default function SessionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: session, isLoading } = useSession(id);
+  const showCost = useShowCost();
   const { messages, isConnected } = useSessionStream(id);
   const sendPrompt = useSendPrompt(id);
   const pauseSession = usePauseSession(id);
@@ -43,10 +44,14 @@ export default function SessionDetailScreen() {
         clearMessages(id);
         break;
       case 'cost':
-        Alert.alert('Session Cost', `$${session?.total_cost_usd.toFixed(4) ?? '0.00'}`);
+        if (showCost) {
+          Alert.alert('Session Cost', `$${session?.total_cost_usd.toFixed(4) ?? '0.00'}`);
+        } else {
+          Alert.alert('Session Cost', 'Cost display is disabled in server config');
+        }
         break;
     }
-  }, [id, clearMessages, session?.total_cost_usd]);
+  }, [id, clearMessages, session?.total_cost_usd, showCost]);
 
   useEffect(() => {
     if (pendingSkillInsert) {

@@ -103,6 +103,7 @@ export interface ServerStatus {
   status: string;
   active_sessions: number;
   total_sessions: number;
+  show_cost?: boolean;
 }
 
 export interface PushSettings {

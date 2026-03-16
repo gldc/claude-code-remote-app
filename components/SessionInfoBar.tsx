@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing } from '../constants/theme';
+import { useShowCost } from '../lib/api';
 
 interface SessionInfoBarProps {
   projectDir: string;
@@ -31,6 +32,7 @@ export function SessionInfoBar({
 }: SessionInfoBarProps) {
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
+  const showCost = useShowCost();
   const [expanded, setExpanded] = useState(false);
 
   const containerWidth = useSharedValue(0);
@@ -42,7 +44,7 @@ export function SessionInfoBar({
   const tickerText = [
     project,
     gitBranch ? `(${gitBranch})` : null,
-    `$${costUsd.toFixed(2)}`,
+    showCost ? `$${costUsd.toFixed(2)}` : null,
     model,
     contextPercent > 0 ? `${contextPercent}% ctx` : null,
   ]
@@ -101,10 +103,12 @@ export function SessionInfoBar({
             <Text style={styles.expandedText}>{gitBranch}</Text>
           </View>
         )}
-        <View style={styles.expandedRow}>
-          <Ionicons name="card-outline" size={13} color={colors.textMuted} />
-          <Text style={styles.expandedText}>${costUsd.toFixed(4)}</Text>
-        </View>
+        {showCost && (
+          <View style={styles.expandedRow}>
+            <Ionicons name="card-outline" size={13} color={colors.textMuted} />
+            <Text style={styles.expandedText}>${costUsd.toFixed(4)}</Text>
+          </View>
+        )}
         {model && (
           <View style={styles.expandedRow}>
             <Ionicons name="hardware-chip-outline" size={13} color={colors.textMuted} />
