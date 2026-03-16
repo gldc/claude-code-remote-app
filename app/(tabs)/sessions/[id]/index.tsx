@@ -7,11 +7,12 @@ import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Share } from 'react-native';
 import type { SlashCommand } from '../../../../constants/commands';
-import { useSession, usePauseSession, useSendPrompt, useExportSession, useShowCost } from '../../../../lib/api';
+import { useSession, usePauseSession, useSendPrompt, useExportSession, useShowCost, useUploadFiles } from '../../../../lib/api';
 import { useSessionStream } from '../../../../lib/websocket';
 import { useAppStore } from '../../../../lib/store';
 import { MessageCard } from '../../../../components/MessageCard';
 import { InputBar } from '../../../../components/InputBar';
+import type { PendingAttachment } from '../../../../components/AttachmentPreview';
 import { StatusBadge } from '../../../../components/StatusBadge';
 import { GitPanel } from '../../../../components/GitPanel';
 import { SessionInfoBar } from '../../../../components/SessionInfoBar';
@@ -25,6 +26,7 @@ export default function SessionDetailScreen() {
   const showCost = useShowCost();
   const { messages, isConnected } = useSessionStream(id);
   const sendPrompt = useSendPrompt(id);
+  const uploadFiles = useUploadFiles(id);
   const pauseSession = usePauseSession(id);
   const exportSession = useExportSession(id);
   const router = useRouter();
@@ -176,11 +178,24 @@ export default function SessionDetailScreen() {
 
       {canSend && (
         <InputBar
-          onSend={(text) => {
-            sendPrompt.mutate(text);
+          onSend={async (text, attachments) => {
+            let prompt = text;
+            if (attachments?.length) {
+              try {
+                const result = await uploadFiles.mutateAsync(attachments);
+                const paths = result.files.map((f) => `- ${f.path}`).join('\n');
+                prompt = `<attached-files>\nThese files were uploaded from the user's mobile device. Use the Read tool to view each one.\n${paths}\n</attached-files>\n\n${text}`;
+              } catch {
+                Alert.alert('Upload Failed', 'Could not upload attachments. Please try again.');
+                return;
+              }
+            }
+            if (prompt.trim()) {
+              sendPrompt.mutate(prompt);
+            }
           }}
           onCommand={handleCommand}
-          disabled={sendPrompt.isPending}
+          disabled={sendPrompt.isPending || uploadFiles.isPending}
           placeholder="Message Claude..."
           initialText={pendingSkillInsert}
         />

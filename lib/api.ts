@@ -192,6 +192,38 @@ export function useSendPrompt(sessionId: string) {
   });
 }
 
+export interface UploadedFile {
+  name: string;
+  path: string;
+  size: number;
+}
+
+export function useUploadFiles(sessionId: string) {
+  const baseUrl = useBaseUrl();
+  return useMutation({
+    mutationFn: async (files: { uri: string; name: string; type: string }[]) => {
+      const formData = new FormData();
+      for (const file of files) {
+        formData.append('files', {
+          uri: file.uri,
+          name: file.name,
+          type: file.type,
+        } as unknown as Blob);
+      }
+      const resp = await fetch(`${baseUrl}/api/sessions/${sessionId}/upload`, {
+        method: 'POST',
+        body: formData,
+        // Do NOT set Content-Type — fetch sets it with the boundary for multipart
+      });
+      if (!resp.ok) {
+        const body = await resp.text();
+        throw new Error(`Upload failed: ${resp.status} ${body}`);
+      }
+      return resp.json() as Promise<{ files: UploadedFile[] }>;
+    },
+  });
+}
+
 export function useApproveToolUse(sessionId: string) {
   const baseUrl = useBaseUrl();
   const qc = useQueryClient();
