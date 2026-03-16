@@ -336,6 +336,12 @@ export function useServerStatus() {
   });
 }
 
+export function useShowCost(): boolean {
+  const { data } = useServerStatus();
+  // Default to true for backward compat with older servers
+  return data?.show_cost ?? true;
+}
+
 // --- Push ---
 
 export function useRegisterPushToken() {
