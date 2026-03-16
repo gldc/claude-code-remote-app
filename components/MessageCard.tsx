@@ -6,6 +6,7 @@ import { ToolUseCard } from './ToolUseCard';
 import { ToolResultCard } from './ToolResultCard';
 import { BashOutputCard } from './BashOutputCard';
 import { ApprovalCard } from './ApprovalCard';
+import { useShowCost } from '../lib/api';
 import { ErrorCard } from './ErrorCard';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
 import { shadowCard } from '../constants/shadows';
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export function MessageCard({ message, sessionId, isFirstInGroup }: Props) {
+  const showCost = useShowCost();
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
 
@@ -87,7 +89,7 @@ export function MessageCard({ message, sessionId, isFirstInGroup }: Props) {
           <View style={styles.statusLine} />
           <Text style={styles.statusText}>
             {message.data.status === 'completed' ? 'Turn complete' : message.data.status}
-            {message.data.cost_usd ? ` · $${Number(message.data.cost_usd).toFixed(2)}` : ''}
+            {showCost && message.data.cost_usd ? ` · $${Number(message.data.cost_usd).toFixed(2)}` : ''}
           </Text>
           <View style={styles.statusLine} />
         </View>
