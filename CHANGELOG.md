@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.5.0] - 2026-03-17
+
+### Added
+- Native session interop -- terminal Claude Code sessions appear alongside CCR sessions in the session list
+- Server hostname badge on native session cards (shows which machine the session is from)
+- "Live" indicator for native sessions with an active terminal process
+- Hide/unhide actions for native sessions (swipe to archive or delete without destroying data)
+- AssistantCard component for rendering grouped assistant responses (text + tool use in one card)
+- Adoption flow -- sending a message to a native session seamlessly adopts it as a CCR session
+- Active terminal detection -- input disabled with message when a native session has a running PID
+
+### Changed
+- Migrated from WSMessage format to native Claude Code stream-json event format
+- MessageCard rewritten for native event types (`assistant`, `tool_result`, `user`, `result`)
+- ToolUseCard and ToolResultCard accept native field names directly
+- Rate limit and turn-complete dividers hidden (reduces visual noise)
+- WebSocket validates native event types; 4004 (session not found) no longer triggers reconnect loop
+
+### Fixed
+- Assistant card bubble styling restored (background, border radius, shadow)
+- Tool-use-only assistant events render at full width without empty bubble
+- User messages with array content (internal protocol) no longer show raw JSON
+- Session list preview no longer shows raw JSON from internal protocol messages
+
 ## [1.4.0] - 2026-03-16
 
 ### Added
