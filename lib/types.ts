@@ -146,7 +146,7 @@ export interface ToolResultEvent extends NativeEvent {
 
 export interface UserEvent extends NativeEvent {
   type: 'user';
-  message: { role: 'user'; content: string | any[] };
+  message: { role: 'user'; content: string };
 }
 
 export interface ResultEvent extends NativeEvent {

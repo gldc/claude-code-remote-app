@@ -26,9 +26,10 @@ export function MessageCard({ message, sessionId, isFirstInGroup }: Props) {
   switch (message.type) {
     // --- Native event types ---
     case 'user': {
-      const content = typeof message.message?.content === 'string'
-        ? message.message.content
-        : JSON.stringify(message.message?.content);
+      // Only render actual user input (string content).
+      // Array content (tool results, interruptions) is normalized server-side.
+      const content = message.message?.content;
+      if (typeof content !== 'string' || !content.trim()) return null;
       return (
         <View style={styles.userRow}>
           <CopyablePressable text={content} style={styles.userBubble}>
