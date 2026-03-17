@@ -15,6 +15,28 @@ export function AssistantCard({ event, isFirstInGroup }: Props) {
   const styles = useThemedStyles(colors, makeStyles);
   const content = event.message?.content || [];
 
+  const hasText = content.some((b: any) => b.type === 'text' && b.text?.trim());
+  const toolUseBlocks = content.filter((b: any) => b.type === 'tool_use');
+
+  // Tool-use only (no text): render tool cards at full width (no avatar/bubble)
+  if (!hasText && toolUseBlocks.length > 0) {
+    return (
+      <>
+        {toolUseBlocks.map((block: any, i: number) => (
+          <ToolUseCard
+            key={i}
+            toolName={block.name}
+            toolInput={block.input}
+            toolUseId={block.id}
+          />
+        ))}
+      </>
+    );
+  }
+
+  // No renderable content at all
+  if (!hasText && toolUseBlocks.length === 0) return null;
+
   return (
     <View style={styles.container}>
       <View style={styles.avatarCol}>
@@ -25,7 +47,7 @@ export function AssistantCard({ event, isFirstInGroup }: Props) {
         )}
       </View>
       <View style={styles.blocks}>
-        {content.map((block, i) => {
+        {content.map((block: any, i: number) => {
           if (block.type === 'text') {
             return <AssistantTextCard key={i} text={block.text} />;
           }
@@ -81,5 +103,9 @@ const makeStyles = (c: ColorPalette) =>
       paddingHorizontal: Spacing.xs,
       gap: Spacing.xs,
       ...shadowCard,
+    },
+    toolOnlyBlocks: {
+      flex: 1,
+      gap: Spacing.xs,
     },
   });
