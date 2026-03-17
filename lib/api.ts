@@ -100,6 +100,28 @@ export function useArchiveSession() {
   });
 }
 
+export function useHideSession() {
+  const baseUrl = useBaseUrl();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ sessionId, permanent = false }: { sessionId: string; permanent?: boolean }) => {
+      return apiFetch(baseUrl, `/api/sessions/${sessionId}/hide?permanent=${permanent}`, { method: 'POST' });
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['sessions'] }); },
+  });
+}
+
+export function useUnhideSession() {
+  const baseUrl = useBaseUrl();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (sessionId: string) => {
+      return apiFetch(baseUrl, `/api/sessions/${sessionId}/unhide`, { method: 'POST' });
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['sessions'] }); },
+  });
+}
+
 export function useSession(id: string) {
   const baseUrl = useBaseUrl();
   return useQuery<Session>({
@@ -372,6 +394,11 @@ export function useShowCost(): boolean {
   const { data } = useServerStatus();
   // Default to true for backward compat with older servers
   return data?.show_cost ?? true;
+}
+
+export function useHostname(): string | undefined {
+  const { data } = useServerStatus();
+  return data?.hostname;
 }
 
 // --- Push ---

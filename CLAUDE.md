@@ -10,7 +10,7 @@ Expo React Native mobile app that connects to a Claude Code Remote (CCR) server 
 Expo App (this repo)
 ├── app/             Expo Router file-based routing
 │   ├── _layout      Root layout + providers (QueryClient, GestureHandler, SafeArea)
-│   └── (tabs)/      Tab navigator: Sessions, Projects, Settings
+│   └── (tabs)/      Tab navigator: Sessions, Projects, Cron, Settings
 ├── components/      Shared UI components
 ├── constants/       Theme (colors, spacing) + slash command registry
 └── lib/             API client, WebSocket, Zustand store, types, notifications
@@ -18,7 +18,7 @@ Expo App (this repo)
 
 ### State Management
 
-- **Server state**: TanStack React Query (`lib/api.ts`) — sessions, templates, projects, push settings
+- **Server state**: TanStack React Query (`lib/api.ts`) — sessions, templates, projects, cron jobs, push settings
 - **Local state**: Zustand with AsyncStorage persistence (`lib/store.ts`) — host config, transient session messages
 - **Real-time**: WebSocket per active session (`lib/websocket.ts`) — streams messages, auto-reconnects on close
 
@@ -41,7 +41,7 @@ All color tokens live in `constants/theme.ts`. The `ColorPalette` interface has 
 
 `lib/api.ts` exports React Query hooks for every endpoint. Base URL comes from Zustand store (`hostConfig.address` + `hostConfig.port`). All requests use `http://` (Tailscale handles encryption).
 
-Key polling intervals: sessions list 5s, individual session 5s, server status 10s, templates/projects 30s.
+Key polling intervals: sessions list 5s, individual session 5s, server status 10s, templates/projects/cron jobs 30s.
 
 ### WebSocket
 
@@ -54,7 +54,7 @@ Key polling intervals: sessions list 5s, individual session 5s, server status 10
 | File | Purpose |
 |------|---------|
 | `app/_layout.tsx` | Root layout — providers, StatusBar style |
-| `app/(tabs)/_layout.tsx` | Tab navigator (Sessions, Projects, Settings) |
+| `app/(tabs)/_layout.tsx` | Tab navigator (Sessions, Projects, Cron, Settings) |
 | `app/(tabs)/sessions/index.tsx` | Session list with filter chips |
 | `app/(tabs)/sessions/[id].tsx` | Session detail — message stream, input bar, action menu |
 | `app/(tabs)/sessions/[id]/mcp.tsx` | Session MCP servers list with health status |
@@ -62,6 +62,9 @@ Key polling intervals: sessions list 5s, individual session 5s, server status 10
 | `app/(tabs)/sessions/create.tsx` | Full-screen session creation form |
 | `app/(tabs)/sessions/workflows/index.tsx` | Workflow list |
 | `app/(tabs)/sessions/workflows/[id].tsx` | Workflow detail with step form and DAG view |
+| `app/(tabs)/cron/_layout.tsx` | Cron tab stack navigator |
+| `app/(tabs)/cron/index.tsx` | Cron job list with filters and FAB |
+| `app/(tabs)/cron/[id].tsx` | Cron job detail with run history |
 | `app/(tabs)/projects/index.tsx` | Project list with FAB for creating projects |
 | `app/(tabs)/projects/[id].tsx` | Project detail with sessions, cloning/error states |
 | `app/(tabs)/projects/create.tsx` | Create project — blank (git init) or clone from URL |
@@ -78,7 +81,7 @@ Key polling intervals: sessions list 5s, individual session 5s, server status 10
 | `components/ToolUseCard.tsx` | Tool invocation display |
 | `components/ToolResultCard.tsx` | Tool output display |
 | `components/BashOutputCard.tsx` | Bash command output display |
-| `components/InputBar.tsx` | Text input + send button |
+| `components/InputBar.tsx` | Text input + send button + attachment picker |
 | `components/CommandAutocomplete.tsx` | Slash command dropdown above input |
 | `components/SessionCard.tsx` | Session list item |
 | `components/SessionInfoBar.tsx` | Session info bar (project, cost, model, context %) |
@@ -100,6 +103,12 @@ Key polling intervals: sessions list 5s, individual session 5s, server status 10
 | `components/ProgressMeter.tsx` | Progress bar component |
 | `components/TimeCountdown.tsx` | Countdown timer display |
 | `components/TrendChart.tsx` | Simple trend visualization |
+| `components/AttachmentPicker.tsx` | Modal attachment source picker (camera, photos, files) |
+| `components/AttachmentPreview.tsx` | Thumbnail/badge row for selected file attachments |
+| `components/CronJobCard.tsx` | Cron job list item with swipe-to-delete |
+| `components/CreateCronJobSheet.tsx` | Bottom sheet form for creating cron jobs |
+| `components/SchedulePicker.tsx` | Frequency-based cron expression builder |
+| `components/CopyablePressable.tsx` | Long-press copy wrapper with flash animation and toast |
 | `components/AnsiRenderer.tsx` | ANSI escape code renderer for terminal output |
 | `components/AvatarRow.tsx` | Avatar display row |
 | `components/SyntaxHighlightedText.tsx` | Code syntax highlighting |
@@ -109,6 +118,8 @@ Key polling intervals: sessions list 5s, individual session 5s, server status 10
 | `lib/websocket.ts` | WebSocket hook for live session streaming |
 | `lib/store.ts` | Zustand store (host config, session messages) |
 | `lib/types.ts` | TypeScript interfaces (Session, Template, Project, WSMessageData, etc.) |
+| `lib/cron-utils.ts` | Cron expression parser (`describeCron`) and status map |
+| `lib/useCopyText.ts` | Copy-to-clipboard hook with haptic feedback |
 | `lib/notifications.ts` | Expo push notification setup and token registration |
 
 ## Important Notes
@@ -157,9 +168,45 @@ The most complex screen. Key behaviors:
 - Connects WebSocket on mount, disconnects on unmount
 - Info bar shows: project (branch) | cost | model | context %
 - FlatList renders messages via `MessageCard` router
-- InputBar with slash command autocomplete
+- InputBar with slash command autocomplete and file attachments
 - Approval cards inline in the message stream
 - Status change dividers between turns
+
+## Cron Jobs
+
+The Cron tab manages scheduled Claude Code sessions. Jobs run on a cron schedule server-side and spawn new sessions automatically.
+
+- **List screen**: Filterable by status (active/paused), FAB to create, swipe-to-delete on cards
+- **Detail screen**: Shows job config, next/last run times, and paginated run history
+- **CreateCronJobSheet**: Bottom sheet form with name, prompt, project dir, model, max budget, and schedule picker
+- **SchedulePicker**: Frequency-based UI (hourly/daily/weekly/monthly) that generates cron expressions — users don't write raw cron syntax
+- **Cron-spawned sessions**: Marked with a clock icon badge in the session list
+
+`lib/cron-utils.ts` provides `describeCron()` for human-readable cron descriptions and `CRON_STATUS_MAP` for status colors/labels.
+
+## File Attachments
+
+The InputBar supports attaching files (images from camera/photo library, or documents) to messages.
+
+- **AttachmentPicker**: Themed modal with Camera, Photos, and File options (replaces system ActionSheetIOS for cross-platform consistency)
+- **AttachmentPreview**: Shows thumbnails/badges for selected files before sending
+- **Upload flow**: Files are uploaded via `useUploadFiles` mutation (multipart POST) before the prompt is sent. The prompt includes XML-tagged file references so Claude can access them.
+- **Native permissions**: Camera and photo library require appropriate `Info.plist` entries (already configured in `app.json`).
+
+## Copy & Clipboard
+
+All message cards support long-press to copy content to clipboard:
+
+- **CopyablePressable**: Wrapper component with flash animation and ephemeral "Copied" toast
+- **useCopyText**: Hook that copies text via `expo-clipboard` and triggers success haptic feedback
+- **Terminal view**: Clickable links (opens in browser) and a paste button in the toolbar
+
+## Server Settings
+
+The app respects the `show_cost` server setting:
+
+- When `show_cost` is `false`, cost is hidden from SessionInfoBar, SessionCard, and per-turn status change messages
+- `useShowCost()` hook reads from server status (defaults to `true` for backward compatibility)
 
 ## Slash Commands
 

@@ -9,18 +9,23 @@ export type SessionStatus =
 
 export type ProjectType = 'python' | 'node' | 'rust' | 'go' | 'unknown';
 
-export type WSMessageType =
+export type NativeEventType =
+  | 'assistant'
+  | 'tool_result'
+  | 'user'
+  | 'result'
+  | 'rate_limit_event'
+  | 'approval_request'
+  | 'error'
+  | 'ping'
+  // Legacy types (pre-migration sessions)
   | 'assistant_text'
   | 'user_message'
   | 'tool_use'
-  | 'tool_result'
   | 'status_change'
-  | 'approval_request'
-  | 'error'
   | 'rate_limit'
   | 'cost_update'
-  | 'bash_output'
-  | 'ping';
+  | 'bash_output';
 
 export interface SessionSummary {
   id: string;
@@ -37,12 +42,14 @@ export interface SessionSummary {
   last_message_preview: string | null;
   archived: boolean;
   cron_job_id?: string | null;
+  source?: 'ccr' | 'native';
+  native_pid?: number | null;
 }
 
 export interface Session extends SessionSummary {
   template_id: string | null;
   max_budget_usd: number | null;
-  messages: WSMessageData[];
+  messages: NativeEvent[];
   error_message: string | null;
   collaborators: string[];
 }
@@ -104,6 +111,7 @@ export interface ServerStatus {
   active_sessions: number;
   total_sessions: number;
   show_cost?: boolean;
+  hostname?: string;
 }
 
 export interface PushSettings {
@@ -112,38 +120,52 @@ export interface PushSettings {
   notify_errors: boolean;
 }
 
-export interface WSMessageData {
-  type: WSMessageType;
-  data: Record<string, any>;
-  timestamp: string;
+export interface NativeEvent {
+  type: NativeEventType;
+  timestamp?: string;
+  [key: string]: any;
 }
 
-export interface AssistantTextData {
-  text: string;
+export interface AssistantEvent extends NativeEvent {
+  type: 'assistant';
+  message: {
+    model?: string;
+    content: Array<
+      | { type: 'text'; text: string }
+      | { type: 'tool_use'; name: string; input: Record<string, any>; id: string }
+    >;
+  };
 }
 
-export interface ToolUseData {
-  tool_name: string;
-  tool_input: Record<string, any>;
+export interface ToolResultEvent extends NativeEvent {
+  type: 'tool_result';
+  content: string;
   tool_use_id: string;
+  is_error?: boolean;
 }
 
-export interface ToolResultData {
-  output: string;
-  is_error: boolean;
+export interface UserEvent extends NativeEvent {
+  type: 'user';
+  message: { role: 'user'; content: string };
 }
 
-export interface ApprovalRequestData {
-  tool_name: string;
-  tool_input: Record<string, any>;
-  description: string;
+export interface ResultEvent extends NativeEvent {
+  type: 'result';
+  subtype: 'success' | 'error';
+  total_cost_usd?: number;
+  duration_ms?: number;
+  session_id?: string;
 }
 
-export interface StatusChangeData {
-  status: SessionStatus;
-  cost_usd: number;
-  duration_ms: number;
-  result: string;
+export interface ApprovalRequestEvent extends NativeEvent {
+  type: 'approval_request';
+  data: {
+    tool_name: string;
+    tool_input: Record<string, any>;
+    description: string;
+    resolved?: boolean;
+    approved?: boolean;
+  };
 }
 
 export interface StatusColors {

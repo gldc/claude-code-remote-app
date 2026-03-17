@@ -1,30 +1,22 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useAppStore } from './store';
-import type { WSMessageData } from './types';
+import type { NativeEvent } from './types';
 
-const VALID_WS_MESSAGE_TYPES: Set<string> = new Set<string>([
-  'assistant_text',
-  'user_message',
-  'tool_use',
-  'tool_result',
-  'status_change',
-  'approval_request',
-  'error',
-  'rate_limit',
-  'cost_update',
-  'bash_output',
-  'ping',
+const VALID_EVENT_TYPES = new Set([
+  'assistant', 'tool_result', 'user', 'result',
+  'rate_limit_event', 'approval_request', 'error', 'ping',
+  // Legacy types (pre-migration sessions)
+  'assistant_text', 'user_message', 'tool_use', 'status_change',
+  'rate_limit', 'cost_update', 'bash_output',
 ]);
 
-function isValidWSMessage(msg: unknown): msg is WSMessageData {
-  if (msg === null || typeof msg !== 'object') return false;
-  const obj = msg as Record<string, unknown>;
-  if (typeof obj.type !== 'string' || !VALID_WS_MESSAGE_TYPES.has(obj.type)) return false;
-  if (obj.type !== 'ping' && (obj.data === null || typeof obj.data !== 'object')) return false;
-  return true;
+function isValidEvent(data: unknown): data is NativeEvent {
+  if (data === null || typeof data !== 'object') return false;
+  const obj = data as Record<string, unknown>;
+  return typeof obj.type === 'string' && VALID_EVENT_TYPES.has(obj.type);
 }
 
-const EMPTY_MESSAGES: WSMessageData[] = [];
+const EMPTY_MESSAGES: NativeEvent[] = [];
 
 // Batch backfill messages arriving within this window (ms) after connect
 const BACKFILL_WINDOW_MS = 200;
@@ -42,7 +34,7 @@ export function useSessionStream(sessionId: string | null) {
   const unmountedRef = useRef(false);
 
   // Backfill buffering: collect messages arriving right after connect, flush as batch
-  const backfillBuffer = useRef<WSMessageData[]>([]);
+  const backfillBuffer = useRef<NativeEvent[]>([]);
   const backfillTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const isBackfilling = useRef(false);
 
@@ -73,7 +65,7 @@ export function useSessionStream(sessionId: string | null) {
     ws.onmessage = (event) => {
       try {
         const parsed: unknown = JSON.parse(event.data);
-        if (!isValidWSMessage(parsed)) return;
+        if (!isValidEvent(parsed)) return;
         if (parsed.type === 'ping') return;
 
         if (isBackfilling.current) {
@@ -95,14 +87,14 @@ export function useSessionStream(sessionId: string | null) {
         if (backfillTimer.current) clearTimeout(backfillTimer.current);
         flushBackfill();
       }
-      // 4003 = unauthorized — do not reconnect, surface error to user
-      if (event.code === 4003) {
+      // 4003 = unauthorized, 4004 = session not found — do not reconnect
+      if (event.code === 4003 || event.code === 4004) {
         if (sessionId) {
           appendMessage(sessionId, {
             type: 'error',
-            data: { message: 'Access denied: unauthorized WebSocket connection (4003).' },
+            error: 'Access denied: unauthorized WebSocket connection (4003).',
             timestamp: new Date().toISOString(),
-          } as WSMessageData);
+          } as NativeEvent);
         }
         return;
       }

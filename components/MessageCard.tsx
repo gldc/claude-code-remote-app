@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native';
-import type { WSMessageData } from '../lib/types';
+import type { NativeEvent } from '../lib/types';
 import { AssistantTextCard } from './AssistantTextCard';
+import { AssistantCard } from './AssistantCard';
 import { CopyablePressable } from './CopyablePressable';
 import { ToolUseCard } from './ToolUseCard';
 import { ToolResultCard } from './ToolResultCard';
@@ -12,7 +13,7 @@ import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, Borde
 import { shadowCard } from '../constants/shadows';
 
 interface Props {
-  message: WSMessageData;
+  message: NativeEvent;
   sessionId: string;
   isFirstInGroup?: boolean;
 }
@@ -23,6 +24,64 @@ export function MessageCard({ message, sessionId, isFirstInGroup }: Props) {
   const styles = useThemedStyles(colors, makeStyles);
 
   switch (message.type) {
+    // --- Native event types ---
+    case 'user': {
+      // Only render actual user input (string content).
+      // Array content (tool results, interruptions) is normalized server-side.
+      const content = message.message?.content;
+      if (typeof content !== 'string' || !content.trim()) return null;
+      return (
+        <View style={styles.userRow}>
+          <CopyablePressable text={content} style={styles.userBubble}>
+            <Text style={styles.userText}>{content}</Text>
+          </CopyablePressable>
+        </View>
+      );
+    }
+
+    case 'assistant':
+      return <AssistantCard event={message} isFirstInGroup={isFirstInGroup} />;
+
+    case 'tool_result':
+      return (
+        <ToolResultCard
+          content={message.content ?? message.data?.output ?? message.data?.content ?? ''}
+          isError={message.is_error ?? message.data?.is_error}
+          toolUseId={message.tool_use_id ?? message.data?.tool_use_id}
+        />
+      );
+
+    case 'approval_request':
+      return (
+        <ApprovalCard
+          sessionId={sessionId}
+          toolName={message.data.tool_name}
+          toolInput={message.data.tool_input}
+          description={message.data.description}
+          resolved={message.data.resolved}
+          approved={message.data.approved}
+        />
+      );
+
+    case 'result': {
+      // Only show errors; successful turn completions are visual noise
+      if (message.subtype === 'success') return null;
+      return (
+        <View style={styles.statusRow}>
+          <View style={styles.statusLine} />
+          <Text style={styles.statusText}>Error</Text>
+          <View style={styles.statusLine} />
+        </View>
+      );
+    }
+
+    case 'rate_limit_event':
+      return null;
+
+    case 'error':
+      return <ErrorCard message={message.data?.message || message.error || 'Unknown error'} />;
+
+    // --- Legacy types (pre-migration sessions) ---
     case 'user_message':
       return (
         <View style={styles.userRow}>
@@ -51,30 +110,11 @@ export function MessageCard({ message, sessionId, isFirstInGroup }: Props) {
         <ToolUseCard
           toolName={message.data.tool_name}
           toolInput={message.data.tool_input}
-        />
-      );
-    case 'tool_result':
-      return (
-        <ToolResultCard
-          output={message.data.output ?? message.data.content ?? ''}
-          isError={message.data.is_error}
+          toolUseId={message.data.tool_use_id}
         />
       );
     case 'bash_output':
       return <BashOutputCard output={message.data.output} />;
-    case 'approval_request':
-      return (
-        <ApprovalCard
-          sessionId={sessionId}
-          toolName={message.data.tool_name}
-          toolInput={message.data.tool_input}
-          description={message.data.description}
-          resolved={message.data.resolved}
-          approved={message.data.approved}
-        />
-      );
-    case 'error':
-      return <ErrorCard message={message.data.message || 'Unknown error'} />;
     case 'rate_limit':
       return (
         <View style={styles.statusRow}>
@@ -94,6 +134,7 @@ export function MessageCard({ message, sessionId, isFirstInGroup }: Props) {
           <View style={styles.statusLine} />
         </View>
       );
+
     default:
       return null;
   }

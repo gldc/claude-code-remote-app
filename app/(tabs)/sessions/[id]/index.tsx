@@ -18,7 +18,7 @@ import { GitPanel } from '../../../../components/GitPanel';
 import { SessionInfoBar } from '../../../../components/SessionInfoBar';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing } from '../../../../constants/theme';
 import { shadowCard } from '../../../../constants/shadows';
-import type { WSMessageData } from '../../../../lib/types';
+import type { NativeEvent } from '../../../../lib/types';
 
 export default function SessionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -64,16 +64,18 @@ export default function SessionDetailScreen() {
   const isFirstAssistantInGroup = useCallback(
     (index: number) => {
       // In reversed array, the "previous" message in chronological order is at index + 1
-      if (reversedMessages[index]?.type !== 'assistant_text') return false;
+      const msgType = reversedMessages[index]?.type;
+      if (msgType !== 'assistant' && msgType !== 'assistant_text') return false;
       if (index === reversedMessages.length - 1) return true;
       const prev = reversedMessages[index + 1];
-      return prev.type === 'user_message' || prev.type === 'status_change';
+      return prev.type === 'user' || prev.type === 'user_message'
+        || prev.type === 'result' || prev.type === 'status_change';
     },
     [reversedMessages],
   );
 
   const renderItem = useCallback(
-    ({ item, index }: { item: WSMessageData; index: number }) => (
+    ({ item, index }: { item: NativeEvent; index: number }) => (
       <MessageCard
         message={item}
         sessionId={id}
@@ -92,7 +94,10 @@ export default function SessionDetailScreen() {
   }
 
   const isActive = session.status === 'running' || session.status === 'awaiting_approval';
-  const canSend = session.status !== 'running' && session.status !== 'awaiting_approval';
+  const isNativeActive = session.native_pid != null;
+  const canSend = session.status !== 'running'
+    && session.status !== 'awaiting_approval'
+    && !isNativeActive;
   const isThinking = session.status === 'running';
 
   return (
@@ -176,6 +181,14 @@ export default function SessionDetailScreen() {
         }
       />
 
+      {isNativeActive && (
+        <View style={{ padding: 12, alignItems: 'center' }}>
+          <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
+            Active in terminal (PID {session.native_pid}) — close it there to send from here
+          </Text>
+        </View>
+      )}
+
       {canSend && (
         <InputBar
           onSend={async (text, attachments) => {
@@ -191,7 +204,10 @@ export default function SessionDetailScreen() {
               }
             }
             if (prompt.trim()) {
-              sendPrompt.mutate(prompt);
+              const result = await sendPrompt.mutateAsync(prompt);
+              if (result?.adopted && result?.new_session_id) {
+                router.replace(`/(tabs)/sessions/${result.new_session_id}`);
+              }
             }
           }}
           onCommand={handleCommand}

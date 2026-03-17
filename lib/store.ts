@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage, type StateStorage } from 'zustand/middleware';
 import * as SecureStore from 'expo-secure-store';
-import type { WSMessageData } from './types';
+import type { NativeEvent } from './types';
 
 const secureStorage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
@@ -25,9 +25,9 @@ interface AppState {
   setHostConfig: (config: HostConfig) => void;
   getBaseUrl: () => string;
 
-  sessionMessages: Record<string, WSMessageData[]>;
-  appendMessage: (sessionId: string, message: WSMessageData) => void;
-  setMessages: (sessionId: string, messages: WSMessageData[]) => void;
+  sessionMessages: Record<string, NativeEvent[]>;
+  appendMessage: (sessionId: string, message: NativeEvent) => void;
+  setMessages: (sessionId: string, messages: NativeEvent[]) => void;
   clearMessages: (sessionId: string) => void;
 
   pendingSkillInsert: string | null;
