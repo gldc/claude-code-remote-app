@@ -8,7 +8,7 @@ import { StatusBadge } from './StatusBadge';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
 import { shadowCard } from '../constants/shadows';
 import type { SessionSummary } from '../lib/types';
-import { useShowCost, useHideSession } from '../lib/api';
+import { useShowCost, useHideSession, useHostname } from '../lib/api';
 
 interface Props {
   session: SessionSummary;
@@ -19,6 +19,7 @@ interface Props {
 export function SessionCard({ session, onDelete, onArchive }: Props) {
   const swipeableRef = useRef<Swipeable>(null);
   const showCost = useShowCost();
+  const hostname = useHostname();
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
   const hideSession = useHideSession();
@@ -133,18 +134,20 @@ export function SessionCard({ session, onDelete, onArchive }: Props) {
               {session.name}
             </Text>
             {session.source === 'native' && (
-              <View style={{ backgroundColor: colors.codeBg, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 1, marginLeft: 6 }}>
-                <Text style={{ fontSize: 10, color: colors.textSecondary }}>Terminal</Text>
+              <View style={{ backgroundColor: colors.toolBg, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 1, marginLeft: 6, maxWidth: 120 }}>
+                <Text style={{ fontSize: 10, color: colors.textSecondary }} numberOfLines={1}>{hostname ?? 'Terminal'}</Text>
               </View>
             )}
           </View>
           {session.native_pid ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 8 }}>
               <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#22c55e' }} />
               <Text style={{ fontSize: 11, color: '#22c55e' }}>Live</Text>
             </View>
           ) : (
-            <StatusBadge status={session.status} />
+            <View style={{ marginLeft: 8 }}>
+              <StatusBadge status={session.status} />
+            </View>
           )}
         </View>
         <Text style={styles.project} numberOfLines={1}>

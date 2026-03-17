@@ -63,27 +63,19 @@ export function MessageCard({ message, sessionId, isFirstInGroup }: Props) {
       );
 
     case 'result': {
-      const isSuccess = message.subtype === 'success';
+      // Only show errors; successful turn completions are visual noise
+      if (message.subtype === 'success') return null;
       return (
         <View style={styles.statusRow}>
           <View style={styles.statusLine} />
-          <Text style={styles.statusText}>
-            {isSuccess ? 'Turn complete' : 'Error'}
-            {showCost && message.total_cost_usd ? ` · $${Number(message.total_cost_usd).toFixed(2)}` : ''}
-          </Text>
+          <Text style={styles.statusText}>Error</Text>
           <View style={styles.statusLine} />
         </View>
       );
     }
 
     case 'rate_limit_event':
-      return (
-        <View style={styles.statusRow}>
-          <View style={styles.statusLine} />
-          <Text style={styles.statusText}>Rate limited — retrying</Text>
-          <View style={styles.statusLine} />
-        </View>
-      );
+      return null;
 
     case 'error':
       return <ErrorCard message={message.data?.message || message.error || 'Unknown error'} />;

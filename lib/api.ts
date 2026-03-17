@@ -396,6 +396,11 @@ export function useShowCost(): boolean {
   return data?.show_cost ?? true;
 }
 
+export function useHostname(): string | undefined {
+  const { data } = useServerStatus();
+  return data?.hostname;
+}
+
 // --- Push ---
 
 export function useRegisterPushToken() {

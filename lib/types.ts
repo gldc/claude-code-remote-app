@@ -111,6 +111,7 @@ export interface ServerStatus {
   active_sessions: number;
   total_sessions: number;
   show_cost?: boolean;
+  hostname?: string;
 }
 
 export interface PushSettings {

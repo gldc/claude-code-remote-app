@@ -2,7 +2,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import type { AssistantEvent } from '../lib/types';
 import { AssistantTextCard } from './AssistantTextCard';
 import { ToolUseCard } from './ToolUseCard';
-import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing } from '../constants/theme';
+import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
+import { shadowCard } from '../constants/shadows';
 
 interface Props {
   event: AssistantEvent;
@@ -73,6 +74,12 @@ const makeStyles = (c: ColorPalette) =>
     },
     blocks: {
       flex: 1,
+      backgroundColor: c.card,
+      borderRadius: 16,
+      borderTopLeftRadius: 4,
+      paddingVertical: Spacing.sm,
+      paddingHorizontal: Spacing.xs,
       gap: Spacing.xs,
+      ...shadowCard,
     },
   });
