@@ -87,8 +87,8 @@ export function useSessionStream(sessionId: string | null) {
         if (backfillTimer.current) clearTimeout(backfillTimer.current);
         flushBackfill();
       }
-      // 4003 = unauthorized — do not reconnect, surface error to user
-      if (event.code === 4003) {
+      // 4003 = unauthorized, 4004 = session not found — do not reconnect
+      if (event.code === 4003 || event.code === 4004) {
         if (sessionId) {
           appendMessage(sessionId, {
             type: 'error',
