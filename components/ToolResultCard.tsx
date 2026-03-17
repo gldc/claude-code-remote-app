@@ -8,8 +8,9 @@ import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, FontF
 import { FontSize_code } from '../constants/typography';
 
 interface Props {
-  output: string;
+  content: string;
   isError?: boolean;
+  toolUseId?: string;
 }
 
 type ContentType = 'diff' | 'code' | 'error' | 'plain';
@@ -42,9 +43,10 @@ function detectContentType(output: string, isError?: boolean): ContentType {
   return 'plain';
 }
 
-export function ToolResultCard({ output, isError }: Props) {
+export function ToolResultCard({ content, isError, toolUseId }: Props) {
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
+  const output = content;
   const contentType = detectContentType(output, isError);
   const lines = output.split('\n');
   const icon = isError

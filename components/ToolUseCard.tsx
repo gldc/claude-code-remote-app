@@ -8,9 +8,10 @@ import { FontSize_code } from '../constants/typography';
 interface Props {
   toolName: string;
   toolInput: Record<string, any>;
+  toolUseId?: string;
 }
 
-export function ToolUseCard({ toolName, toolInput }: Props) {
+export function ToolUseCard({ toolName, toolInput, toolUseId }: Props) {
   const [expanded, setExpanded] = useState(false);
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);

@@ -18,7 +18,7 @@ import { GitPanel } from '../../../../components/GitPanel';
 import { SessionInfoBar } from '../../../../components/SessionInfoBar';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing } from '../../../../constants/theme';
 import { shadowCard } from '../../../../constants/shadows';
-import type { WSMessageData } from '../../../../lib/types';
+import type { NativeEvent } from '../../../../lib/types';
 
 export default function SessionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -64,16 +64,18 @@ export default function SessionDetailScreen() {
   const isFirstAssistantInGroup = useCallback(
     (index: number) => {
       // In reversed array, the "previous" message in chronological order is at index + 1
-      if (reversedMessages[index]?.type !== 'assistant_text') return false;
+      const msgType = reversedMessages[index]?.type;
+      if (msgType !== 'assistant' && msgType !== 'assistant_text') return false;
       if (index === reversedMessages.length - 1) return true;
       const prev = reversedMessages[index + 1];
-      return prev.type === 'user_message' || prev.type === 'status_change';
+      return prev.type === 'user' || prev.type === 'user_message'
+        || prev.type === 'result' || prev.type === 'status_change';
     },
     [reversedMessages],
   );
 
   const renderItem = useCallback(
-    ({ item, index }: { item: WSMessageData; index: number }) => (
+    ({ item, index }: { item: NativeEvent; index: number }) => (
       <MessageCard
         message={item}
         sessionId={id}
