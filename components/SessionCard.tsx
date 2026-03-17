@@ -8,7 +8,7 @@ import { StatusBadge } from './StatusBadge';
 import { useColors, useThemedStyles, type ColorPalette, FontSize, Spacing, BorderRadius } from '../constants/theme';
 import { shadowCard } from '../constants/shadows';
 import type { SessionSummary } from '../lib/types';
-import { useShowCost } from '../lib/api';
+import { useShowCost, useHideSession } from '../lib/api';
 
 interface Props {
   session: SessionSummary;
@@ -21,26 +21,46 @@ export function SessionCard({ session, onDelete, onArchive }: Props) {
   const showCost = useShowCost();
   const colors = useColors();
   const styles = useThemedStyles(colors, makeStyles);
+  const hideSession = useHideSession();
 
   const handleDelete = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Alert.alert(
-      'Delete Session',
-      `Delete "${session.name}"? This cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel', onPress: () => swipeableRef.current?.close() },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => onDelete(session.id),
-        },
-      ],
-    );
+    if (session.source === 'native') {
+      Alert.alert(
+        'Hide Session',
+        `Permanently hide "${session.name}"? It will no longer appear in the list.`,
+        [
+          { text: 'Cancel', style: 'cancel', onPress: () => swipeableRef.current?.close() },
+          {
+            text: 'Hide',
+            style: 'destructive',
+            onPress: () => hideSession.mutate({ sessionId: session.id, permanent: true }),
+          },
+        ],
+      );
+    } else {
+      Alert.alert(
+        'Delete Session',
+        `Delete "${session.name}"? This cannot be undone.`,
+        [
+          { text: 'Cancel', style: 'cancel', onPress: () => swipeableRef.current?.close() },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: () => onDelete(session.id),
+          },
+        ],
+      );
+    }
   };
 
   const handleArchive = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    onArchive(session.id, !session.archived);
+    if (session.source === 'native') {
+      hideSession.mutate({ sessionId: session.id });
+    } else {
+      onArchive(session.id, !session.archived);
+    }
     swipeableRef.current?.close();
   };
 
@@ -112,8 +132,20 @@ export function SessionCard({ session, onDelete, onArchive }: Props) {
             <Text style={[styles.name, session.archived && styles.textArchived]} numberOfLines={1}>
               {session.name}
             </Text>
+            {session.source === 'native' && (
+              <View style={{ backgroundColor: colors.codeBg, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 1, marginLeft: 6 }}>
+                <Text style={{ fontSize: 10, color: colors.textSecondary }}>Terminal</Text>
+              </View>
+            )}
           </View>
-          <StatusBadge status={session.status} />
+          {session.native_pid ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#22c55e' }} />
+              <Text style={{ fontSize: 11, color: '#22c55e' }}>Live</Text>
+            </View>
+          ) : (
+            <StatusBadge status={session.status} />
+          )}
         </View>
         <Text style={styles.project} numberOfLines={1}>
           {session.project_dir.split('/').pop()}

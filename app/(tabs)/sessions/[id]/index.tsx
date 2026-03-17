@@ -94,7 +94,10 @@ export default function SessionDetailScreen() {
   }
 
   const isActive = session.status === 'running' || session.status === 'awaiting_approval';
-  const canSend = session.status !== 'running' && session.status !== 'awaiting_approval';
+  const isNativeActive = session.native_pid != null;
+  const canSend = session.status !== 'running'
+    && session.status !== 'awaiting_approval'
+    && !isNativeActive;
   const isThinking = session.status === 'running';
 
   return (
@@ -178,6 +181,14 @@ export default function SessionDetailScreen() {
         }
       />
 
+      {isNativeActive && (
+        <View style={{ padding: 12, alignItems: 'center' }}>
+          <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
+            Active in terminal (PID {session.native_pid}) — close it there to send from here
+          </Text>
+        </View>
+      )}
+
       {canSend && (
         <InputBar
           onSend={async (text, attachments) => {
@@ -193,7 +204,10 @@ export default function SessionDetailScreen() {
               }
             }
             if (prompt.trim()) {
-              sendPrompt.mutate(prompt);
+              const result = await sendPrompt.mutateAsync(prompt);
+              if (result?.adopted && result?.new_session_id) {
+                router.replace(`/(tabs)/sessions/${result.new_session_id}`);
+              }
             }
           }}
           onCommand={handleCommand}

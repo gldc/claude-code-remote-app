@@ -42,6 +42,8 @@ export interface SessionSummary {
   last_message_preview: string | null;
   archived: boolean;
   cron_job_id?: string | null;
+  source?: 'ccr' | 'native';
+  native_pid?: number | null;
 }
 
 export interface Session extends SessionSummary {
