@@ -44,9 +44,9 @@ export function MessageCard({ message, sessionId, isFirstInGroup }: Props) {
     case 'tool_result':
       return (
         <ToolResultCard
-          content={message.content ?? ''}
-          isError={message.is_error}
-          toolUseId={message.tool_use_id}
+          content={message.content ?? message.data?.output ?? message.data?.content ?? ''}
+          isError={message.is_error ?? message.data?.is_error}
+          toolUseId={message.tool_use_id ?? message.data?.tool_use_id}
         />
       );
 
